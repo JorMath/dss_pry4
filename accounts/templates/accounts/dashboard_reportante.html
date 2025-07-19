@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Usuario Reportante</title>
+</head>
+<body>
+    <h1>Dashboard - Usuario Reportante</h1>
+    <p>Bienvenido, {{ usuario.nombre }}</p>
+    <p>Rol: {{ usuario.get_rol_display }}</p>
+    <a href="{% url 'logout' %}">Cerrar Sesión</a>
+</body>
+</html>

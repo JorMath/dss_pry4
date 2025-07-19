@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Usuario - Sistema de Seguridad</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-shield-alt"></i>
+            Sistema de Seguridad
+        </div>
+        <div class="nav-user">
+            <i class="fas fa-user-circle"></i>
+            <span>{{ user.nombre|default:user.username }}</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Crear Nuevo Usuario</h1>
+            <p>Registrar nuevos miembros del equipo de seguridad</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-times-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="form-container">
+            <form method="post" class="user-form">
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="fas fa-user"></i>
+                            {{ form.username.label }}
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="error-message">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="fas fa-envelope"></i>
+                            {{ form.email.label }}
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="error-message">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.nombre.id_for_label }}" class="form-label">
+                        <i class="fas fa-id-card"></i>
+                        {{ form.nombre.label }}
+                    </label>
+                    {{ form.nombre }}
+                    {% if form.nombre.errors %}
+                        <div class="error-message">{{ form.nombre.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.rol.id_for_label }}" class="form-label">
+                        <i class="fas fa-user-tag"></i>
+                        {{ form.rol.label }}
+                    </label>
+                    {{ form.rol }}
+                    {% if form.rol.errors %}
+                        <div class="error-message">{{ form.rol.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="info-card">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Información importante:</strong>
+                        <p>Se generará automáticamente una contraseña temporal que será enviada al correo electrónico del usuario.</p>
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        <i class="fas fa-times-circle"></i>
+                        {{ form.non_field_errors.0 }}
+                    </div>
+                {% endif %}
+
+                <div class="form-actions">
+                    <a href="{% url 'dashboard_jefe' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al Dashboard
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Crear Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="info-section">
+            <h3>Roles del Sistema</h3>
+            <div class="roles-grid">
+                <div class="role-card">
+                    <div class="role-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <h4>Jefe de Seguridad</h4>
+                    <p>Acceso completo al sistema, gestión de usuarios y supervisión general</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4>Analista de Seguridad</h4>
+                    <p>Análisis y gestión de incidentes de seguridad</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <h4>Usuario Reportante</h4>
+                    <p>Creación y reporte de incidentes de seguridad</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
