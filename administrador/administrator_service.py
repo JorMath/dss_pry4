@@ -20,7 +20,7 @@ class AdministratorService:
         return contraseña
     
     @staticmethod
-    def enviar_correo_credenciales(email, nombre, username, contraseña_temporal, rol):
+    def enviar_correo_credenciales(email, nombre, username, contraseña_creada, rol):
         """
         Envía un correo con las credenciales de acceso
         """
@@ -33,7 +33,7 @@ Su cuenta ha sido creada exitosamente en el Sistema de Incidentes de Seguridad.
 
 Credenciales de acceso:
 Usuario: {username}
-Contraseña: {contraseña_temporal}
+Contraseña: {contraseña_creada}
 Rol asignado: {dict(Usuario.ROL_CHOICES)[rol]}
 
 INSTRUCCIONES IMPORTANTES:
