@@ -33,14 +33,12 @@ Su cuenta ha sido creada exitosamente en el Sistema de Incidentes de Seguridad.
 
 Credenciales de acceso:
 Usuario: {username}
-Contraseña temporal: {contraseña_temporal}
+Contraseña: {contraseña_temporal}
 Rol asignado: {dict(Usuario.ROL_CHOICES)[rol]}
 
 INSTRUCCIONES IMPORTANTES:
 1. Acceda al sistema utilizando las credenciales proporcionadas
-2. Por seguridad, cambie su contraseña en el primer inicio de sesión
-3. Mantenga sus credenciales seguras y no las comparta
-4. En caso de problemas, contacte al administrador del sistema
+2. Mantenga sus credenciales seguras y no las comparta con nadie
 
 Saludos cordiales,
 Sistema de Gestión de Incidentes de Seguridad
