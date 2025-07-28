@@ -28,6 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('administrador/', include('administrador.urls')),
+    path('incidentes/', include('incidentes.urls')),
 ]
 
 # Servir archivos estáticos en desarrollo

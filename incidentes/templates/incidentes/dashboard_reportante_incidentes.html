@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Incidentes - Sistema de Seguridad</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2030">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="app-title">
+                <i class="fas fa-shield-alt"></i>
+                SISTEMA DE SEGURIDAD
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ user.nombre|first|upper|default:user.username|first|upper }}
+                </div>
+                <div>
+                    <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Usuario Reportante</div>
+                </div>
+                <a href="{% url 'logout' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Salir
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Welcome Section -->
+            <div class="welcome-section" style="background: #ffffff; border: 1px solid var(--gray-200); border-radius: var(--border-radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--card-shadow);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 class="page-title" style="margin: 0 0 0.5rem 0;">
+                            <i class="fas fa-bug" style="color: var(--accent-orange); margin-right: 0.8rem;"></i>
+                            Dashboard de Incidentes
+                        </h1>
+                        <p style="margin: 0; color: var(--text-muted);">Gestiona y hace seguimiento a tus reportes de incidentes de seguridad</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'dashboard_reportante' %}" class="btn btn-secondary">
+                            <i class="fas fa-home"></i>
+                            Dashboard Principal
+                        </a>
+                        <a href="{% url 'incidentes:reportar_incidente' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Incidente
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="stat-card" style="background: linear-gradient(135deg, #FF6B35, #FF8E53); color: white;">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.pendientes }}</div>
+                        <div class="stat-label">Incidentes Pendientes</div>
+                        <div class="stat-sublabel">Requieren atención</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #4ECDC4, #7DCEA0); color: white;">
+                    <div class="stat-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.en_proceso }}</div>
+                        <div class="stat-label">En Proceso</div>
+                        <div class="stat-sublabel">Siendo atendidos</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #45B7D1, #74C0FC); color: white;">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.resueltos }}</div>
+                        <div class="stat-label">Resueltos</div>
+                        <div class="stat-sublabel">Exitosamente cerrados</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #F093FB, #F5576C); color: white;">
+                    <div class="stat-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.criticos }}</div>
+                        <div class="stat-label">Críticos</div>
+                        <div class="stat-sublabel">Alta prioridad</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Reportar Incidente</h3>
+                        <p>Crea un nuevo reporte de incidente de seguridad con toda la información necesaria.</p>
+                        <a href="{% url 'incidentes:reportar_incidente' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-arrow-right"></i>
+                            Reportar Ahora
+                        </a>
+                    </div>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-list-alt"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Ver Mis Incidentes</h3>
+                        <p>Consulta todos los incidentes que has reportado y su estado actual de progreso.</p>
+                        <a href="{% url 'incidentes:mis_incidentes' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-arrow-right"></i>
+                            Ver Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Incidents -->
+            {% if incidentes_recientes %}
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Incidentes Recientes</h2>
+                    <p class="card-description">Últimos incidentes reportados</p>
+                </div>
+
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">ID</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th style="width: 120px;">Estado</th>
+                                    <th style="width: 120px;">Gravedad</th>
+                                    <th style="width: 140px;">Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for incidente in incidentes_recientes %}
+                                <tr>
+                                    <td>
+                                        <span class="incident-id">#{{ incidente.id }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="incident-type">
+                                            <i class="fas {% if 'Bug' in incidente.tipo %}fa-bug{% elif 'Acceso' in incidente.tipo %}fa-user-slash{% elif 'Malware' in incidente.tipo %}fa-virus{% elif 'Phishing' in incidente.tipo %}fa-fish{% elif 'DDoS' in incidente.tipo %}fa-server{% elif 'Fuga' in incidente.tipo %}fa-database{% else %}fa-shield-alt{% endif %}"></i>
+                                            {{ incidente.get_tipo_display }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="incident-description" title="{{ incidente.descripcion }}">
+                                            {{ incidente.descripcion|truncatechars:50 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-{{ incidente.estado|lower }}">
+                                            {{ incidente.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="severity-badge severity-{{ incidente.gravedad|lower }}">
+                                            {{ incidente.get_gravedad_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">
+                                        {{ incidente.fecha_reporte|date:"d/m/Y" }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-200);">
+                        <a href="{% url 'incidentes:mis_incidentes' %}" class="btn btn-secondary">
+                            <i class="fas fa-list"></i>
+                            Ver Todos los Incidentes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="empty-state" style="text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
+                        <i class="fas fa-clipboard-list" style="font-size: 4rem; color: var(--gray-300); margin-bottom: 1.5rem;"></i>
+                        <h3 style="margin-bottom: 1rem; color: var(--secondary-color);">No has reportado incidentes</h3>
+                        <p style="margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                            Comienza reportando tu primer incidente de seguridad. Es fácil y rápido.
+                        </p>
+                        <a href="{% url 'incidentes:reportar_incidente' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Reportar Primer Incidente
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <style>
+        .action-card {
+            background: #ffffff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: var(--accent-orange);
+            color: white;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .action-content h3 {
+            margin: 0 0 1rem 0;
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+        }
+
+        .action-content p {
+            margin: 0 0 1.5rem 0;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .incident-id {
+            font-weight: 600;
+            color: var(--accent-orange);
+            font-family: 'Courier New', monospace;
+        }
+
+        .incident-type {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .incident-type i {
+            color: var(--accent-orange);
+            width: 16px;
+        }
+
+        .incident-description {
+            line-height: 1.4;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pendiente {
+            background: rgba(255, 107, 53, 0.15);
+            color: #d63031;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .status-en_proceso {
+            background: rgba(255, 193, 7, 0.15);
+            color: #e17055;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-resuelto {
+            background: rgba(0, 184, 148, 0.15);
+            color: #00b894;
+            border: 1px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .status-cerrado {
+            background: rgba(116, 185, 255, 0.15);
+            color: #0984e3;
+            border: 1px solid rgba(116, 185, 255, 0.3);
+        }
+
+        .status-rechazado {
+            background: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .severity-baja {
+            background: rgba(0, 184, 148, 0.15);
+            color: #00b894;
+            border: 1px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .severity-media {
+            background: rgba(255, 193, 7, 0.15);
+            color: #fdcb6e;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .severity-alta {
+            background: rgba(255, 107, 53, 0.15);
+            color: #e17055;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .severity-critica {
+            background: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+    </style>
+</body>
+</html>

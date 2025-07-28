@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'behave_django',
     'accounts',
     'administrador',
+    'incidentes',
 ]
 AUTH_USER_MODEL = 'accounts.Usuario'
 MIDDLEWARE = [
