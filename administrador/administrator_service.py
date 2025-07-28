@@ -10,14 +10,14 @@ import string
 class AdministratorService:
     
     @staticmethod
-    def generar_contraseña_temporal():
+    def generar_contrasenia_temporal():
         """
         Genera una contraseña temporal segura
         """
         # Generar contraseña de 12 caracteres con letras, números y símbolos
         caracteres = string.ascii_letters + string.digits + "!@#$%^&*"
-        contraseña = ''.join(secrets.choice(caracteres) for _ in range(12))
-        return contraseña
+        contrasenia = ''.join(secrets.choice(caracteres) for _ in range(12))
+        return contrasenia
     
     @staticmethod
     def enviar_correo_credenciales(email, nombre, username, contraseña_creada, rol):
@@ -79,25 +79,25 @@ Sistema de Gestión de Incidentes de Seguridad
         
         try:
             # Generar contraseña temporal
-            contraseña_temporal = AdministratorService.generar_contraseña_temporal()
+            contrasenia_creada = AdministratorService.generar_contrasenia_temporal()
             
             # Crear usuario
             usuario = Usuario.objects.create(
                 username=username,
                 email=email,
-                password=make_password(contraseña_temporal),
+                password=make_password(contrasenia_creada),
                 nombre=nombre,
                 rol=rol
             )
             
             # Enviar correo con credenciales
             correo_enviado = AdministratorService.enviar_correo_credenciales(
-                email, nombre, username, contraseña_temporal, rol
+                email, nombre, username, contrasenia_creada, rol
             )
             
             # Agregar información del estado del correo al usuario
             usuario.correo_enviado = correo_enviado
-            usuario.contraseña_temporal = contraseña_temporal
+            usuario.contraseña_temporal = contrasenia_creada
             
             return usuario
             
@@ -166,3 +166,72 @@ Sistema de Gestión de Incidentes de Seguridad
             raise ValidationError("Usuario no encontrado")
         except Exception as e:
             raise ValidationError(f"Error al eliminar usuario: {str(e)}")
+    
+    @staticmethod
+    def restablecer_contraseña(email):
+        """
+        Restablece la contraseña de un usuario y envía nueva contraseña por correo
+        """
+        try:
+            # Buscar usuario por email
+            usuario = Usuario.objects.get(email=email)
+            
+            # Generar nueva contraseña temporal
+            nueva_contrasenia = AdministratorService.generar_contrasenia_temporal()
+            
+            # Actualizar contraseña en la base de datos
+            usuario.password = make_password(nueva_contrasenia)
+            usuario.save()
+            
+            # Enviar correo con nueva contraseña
+            correo_enviado = AdministratorService.enviar_correo_restablecimiento(
+                email, usuario.nombre or usuario.username, nueva_contrasenia
+            )
+            
+            return {
+                'success': True,
+                'correo_enviado': correo_enviado,
+                'usuario': usuario.username
+            }
+            
+        except Usuario.DoesNotExist:
+            raise ValidationError("No se encontró ningún usuario con ese correo electrónico")
+        except Exception as e:
+            raise ValidationError(f"Error al restablecer contraseña: {str(e)}")
+    
+    @staticmethod
+    def enviar_correo_restablecimiento(email, nombre, nueva_contraseña):
+        """
+        Envía correo con la nueva contraseña temporal
+        """
+        asunto = "Restablecimiento de Contraseña - Sistema de Seguridad"
+        
+        mensaje = f"""
+Estimado/a {nombre},
+
+Has solicitado restablecer tu contraseña para el Sistema de Gestión de Incidentes de Seguridad.
+
+Tu nueva contraseña es: {nueva_contraseña}
+
+INSTRUCCIONES IMPORTANTES:
+1. Inicia sesión con tu usuario y esta contraseña
+2. Esta contraseña es válida inmediatamente
+
+Si no solicitaste este cambio, contacta inmediatamente al administrador del sistema.
+
+Saludos cordiales,
+Sistema de Gestión de Incidentes de Seguridad
+        """
+        
+        try:
+            send_mail(
+                asunto,
+                mensaje,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            return True
+        except Exception as e:
+            print(f"Error enviando correo de restablecimiento: {e}")
+            return False

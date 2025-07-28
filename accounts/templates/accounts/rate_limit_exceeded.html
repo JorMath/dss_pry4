@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demasiados Intentos - Sistema de Incidentes</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2028">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="form-icon">🚫</div>
+            
+            <h1 class="form-title">Demasiados Intentos de Acceso</h1>
+            
+            <div class="info-box">
+                <p><strong>Tu acceso ha sido temporalmente bloqueado</strong></p>
+                <p>Has excedido el límite de intentos de inicio de sesión permitidos por razones de seguridad.</p>
+            </div>
+            
+            <div class="info-message">
+                <p>Por tu seguridad y la del sistema, hemos implementado límites de intentos de acceso:</p>
+                <ul>
+                    <li><strong>Máximo 5 intentos</strong> por dirección IP cada 5 minutos</li>
+                    <li><strong>Máximo 10 intentos</strong> por usuario cada hora</li>
+                </ul>
+            </div>
+            
+            <div class="countdown" id="countdown">
+                Podrás intentar nuevamente en: <span id="timer">5:00</span>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'login' %}" class="btn btn-primary">
+                    ← Volver al Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Countdown timer (5 minutos)
+        let timeLeft = 300; // 5 minutos en segundos
+        
+        function updateCountdown() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            document.getElementById('timer').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                document.getElementById('countdown').innerHTML = 
+                    '<span style="color: #ff8a65;">¡Ya puedes intentar nuevamente!</span>';
+                return;
+            }
+            
+            timeLeft--;
+            setTimeout(updateCountdown, 1000);
+        }
+        
+        // Iniciar countdown
+        updateCountdown();
+    </script>
+        </div>
+    </div>
+</body>
+</html>

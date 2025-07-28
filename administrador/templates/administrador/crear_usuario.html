@@ -5,137 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Usuario - Sistema de Seguridad</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2028">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <i class="fas fa-shield-alt"></i>
-            Sistema de Seguridad
-        </div>
-        <div class="nav-user">
-            <i class="fas fa-user-circle"></i>
-            <span>{{ user.nombre|default:user.username }}</span>
-        </div>
-    </nav>
-
-    <div class="container">
-        <div class="page-header">
-            <h1>Crear Nuevo Usuario</h1>
-            <p>Registrar nuevos miembros del equipo de seguridad</p>
-        </div>
-
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-times-circle{% endif %}"></i>
-                    {{ message }}
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="app-title">
+                <i class="fas fa-shield-alt"></i>
+                SISTEMA DE SEGURIDAD
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ user.nombre|first|upper|default:user.username|first|upper }}
                 </div>
-            {% endfor %}
-        {% endif %}
+                <div>
+                    <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Jefe de Seguridad</div>
+                </div>
+                <a href="{% url 'logout' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Salir
+                </a>
+            </div>
+        </div>
 
-        <div class="form-container">
-            <form method="post" class="user-form">
-                {% csrf_token %}
+        <!-- Main Content -->
+        <div class="main-content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-times-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Form Container -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-user-plus" style="color: var(--accent-orange); margin-right: 0.8rem;"></i>
+                        Información del Usuario
+                    </h2>
+                    <p class="card-description">Complete los datos para crear la nueva cuenta</p>
+                </div>
+
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user"></i>
+                                    Nombre de usuario
+                                </label>
+                                <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}" 
+                                       class="form-input" placeholder="Ingrese nombre de usuario" 
+                                       value="{{ form.username.value|default:'' }}" required>
+                                {% if form.username.errors %}
+                                    <div class="alert alert-error mt-1">{{ form.username.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    <i class="fas fa-envelope"></i>
+                                    Correo electrónico
+                                </label>
+                                <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" 
+                                       class="form-input" placeholder="usuario@empresa.com" 
+                                       value="{{ form.email.value|default:'' }}" required>
+                                {% if form.email.errors %}
+                                    <div class="alert alert-error mt-1">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.nombre.id_for_label }}" class="form-label">
+                                <i class="fas fa-id-card"></i>
+                                Nombre completo
+                            </label>
+                            <input type="text" name="{{ form.nombre.name }}" id="{{ form.nombre.id_for_label }}" 
+                                   class="form-input" placeholder="Ingrese nombre completo" 
+                                   value="{{ form.nombre.value|default:'' }}" required>
+                            {% if form.nombre.errors %}
+                                <div class="alert alert-error mt-1">{{ form.nombre.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.rol.id_for_label }}" class="form-label">
+                                <i class="fas fa-user-tag"></i>
+                                Rol del usuario
+                            </label>
+                            <select name="{{ form.rol.name }}" id="{{ form.rol.id_for_label }}" class="form-input" required>
+                                <option value="">Seleccione un rol</option>
+                                {% for value, display in form.rol.field.choices %}
+                                    {% if value %}
+                                        <option value="{{ value }}" {% if form.rol.value == value %}selected{% endif %}>{{ display }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% if form.rol.errors %}
+                                <div class="alert alert-error mt-1">{{ form.rol.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-info" style="background: rgba(120, 119, 198, 0.1); border: 1px solid rgba(120, 119, 198, 0.2); border-radius: var(--border-radius); padding: 1.5rem; margin: 2rem 0; display: flex; align-items: flex-start;">
+                            <i class="fas fa-info-circle" style="color: #7877c6; margin-right: 1rem; margin-top: 0.2rem; font-size: 1.2rem;"></i>
+                            <div>
+                                <strong style="color: var(--secondary-color); display: block; margin-bottom: 0.5rem;">Información importante:</strong>
+                                <p style="margin: 0; opacity: 0.9; line-height: 1.5;">Se generará automáticamente una contraseña que será enviada al correo electrónico del usuario.</p>
+                            </div>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-error">
+                                {{ form.non_field_errors.0 }}
+                            </div>
+                        {% endif %}
+
+                        <div class="form-actions" style="display: flex; gap: 1rem; justify-content: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--gray-200);">
+                            <a href="{% url 'dashboard_jefe' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i>
+                                Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i>
+                                Crear Usuario
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Role Information Cards -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h2 class="card-title">Roles del Sistema</h2>
+                    <p class="card-description">Información sobre los diferentes tipos de usuarios</p>
+                </div>
                 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">
-                            <i class="fas fa-user"></i>
-                            {{ form.username.label }}
-                        </label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="error-message">{{ form.username.errors.0 }}</div>
-                        {% endif %}
+                <div class="card-body">
+                    <div class="roles-grid">
+                        <div class="role-card">
+                            <div class="role-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <h4>Jefe de Seguridad</h4>
+                            <p>Acceso completo al sistema, gestión de usuarios, supervisión general y reportes ejecutivos</p>
+                        </div>
+                        
+                        <div class="role-card">
+                            <div class="role-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h4>Analista de Seguridad</h4>
+                            <p>Análisis de incidentes, gestión de casos, investigación detallada y reportes técnicos</p>
+                        </div>
+                        
+                        <div class="role-card">
+                            <div class="role-icon">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <h4>Usuario Reportante</h4>
+                            <p>Creación de reportes, seguimiento básico, notificaciones y consulta de estado</p>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">
-                            <i class="fas fa-envelope"></i>
-                            {{ form.email.label }}
-                        </label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="error-message">{{ form.email.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.nombre.id_for_label }}" class="form-label">
-                        <i class="fas fa-id-card"></i>
-                        {{ form.nombre.label }}
-                    </label>
-                    {{ form.nombre }}
-                    {% if form.nombre.errors %}
-                        <div class="error-message">{{ form.nombre.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.rol.id_for_label }}" class="form-label">
-                        <i class="fas fa-user-tag"></i>
-                        {{ form.rol.label }}
-                    </label>
-                    {{ form.rol }}
-                    {% if form.rol.errors %}
-                        <div class="error-message">{{ form.rol.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="info-card">
-                    <i class="fas fa-info-circle"></i>
-                    <div>
-                        <strong>Información importante:</strong>
-                        <p>Se generará automáticamente una contraseña temporal que será enviada al correo electrónico del usuario.</p>
-                    </div>
-                </div>
-
-                {% if form.non_field_errors %}
-                    <div class="alert alert-error">
-                        <i class="fas fa-times-circle"></i>
-                        {{ form.non_field_errors.0 }}
-                    </div>
-                {% endif %}
-
-                <div class="form-actions">
-                    <a href="{% url 'dashboard_jefe' %}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i>
-                        Volver al Dashboard
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-user-plus"></i>
-                        Crear Usuario
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div class="info-section">
-            <h3>Roles del Sistema</h3>
-            <div class="roles-grid">
-                <div class="role-card">
-                    <div class="role-icon">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <h4>Jefe de Seguridad</h4>
-                    <p>Acceso completo al sistema, gestión de usuarios y supervisión general</p>
-                </div>
-                <div class="role-card">
-                    <div class="role-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <h4>Analista de Seguridad</h4>
-                    <p>Análisis y gestión de incidentes de seguridad</p>
-                </div>
-                <div class="role-card">
-                    <div class="role-icon">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                    <h4>Usuario Reportante</h4>
-                    <p>Creación y reporte de incidentes de seguridad</p>
                 </div>
             </div>
         </div>

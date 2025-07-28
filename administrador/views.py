@@ -4,14 +4,12 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from .administrator_service import AdministratorService
 from .forms import CrearUsuarioForm
+from accounts.decorators import rol_required
 
 @login_required
+@rol_required('jefe')
 def crear_usuario_view(request):
     """Vista para crear usuarios (solo para jefes de seguridad)"""
-    if request.user.rol != 'jefe':
-        messages.error(request, 'No tiene permisos para acceder a esta función')
-        return redirect('dashboard_jefe')
-    
     if request.method == 'POST':
         form = CrearUsuarioForm(request.POST)
         if form.is_valid():
@@ -39,12 +37,9 @@ def crear_usuario_view(request):
     return render(request, 'administrador/crear_usuario.html', {'form': form})
 
 @login_required
+@rol_required('jefe')
 def listar_usuarios_view(request):
     """Vista para listar todos los usuarios"""
-    if request.user.rol != 'jefe':
-        messages.error(request, 'No tiene permisos para acceder a esta función')
-        return redirect('dashboard_jefe')
-    
     usuarios = AdministratorService.listar_usuarios()
     estadisticas = AdministratorService.obtener_estadisticas()
     
@@ -54,12 +49,9 @@ def listar_usuarios_view(request):
     })
 
 @login_required
+@rol_required('jefe')
 def dashboard_admin(request):
     """Dashboard principal del administrador"""
-    if request.user.rol != 'jefe':
-        messages.error(request, 'No tiene permisos para acceder a esta función')
-        return redirect('login')
-    
     estadisticas = AdministratorService.obtener_estadisticas()
     usuarios_recientes = AdministratorService.listar_usuarios()[:5]
     

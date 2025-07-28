@@ -3,105 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Jefe de Seguridad - Sistema de Incidentes</title>
+    <title>Dashboard - Sistema de Seguridad</title>
     {% load static %}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2028">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="main-card">
-            <!-- Header Section -->
-            <div class="header-section">
-                <h1><i class="fas fa-shield-alt header-icon"></i>Panel de Control</h1>
-                <p class="subtitle">Sistema de Gestión de Incidentes de Seguridad</p>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="app-title">
+                SISTEMA DE SEGURIDAD
             </div>
-
-            <!-- User Info Section -->
-            <div class="user-info-card">
-                <div class="user-info-title">
-                    <i class="fas fa-user-tie"></i>Información del Usuario
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ user.nombre|first|upper|default:user.username|first|upper }}
                 </div>
-                <div class="user-info-grid">
-                    <div>
-                        <div class="user-info-item">
-                            <strong>Usuario:</strong> {{ usuario.username }}
-                        </div>
-                        <div class="user-info-item">
-                            <strong>Nombre:</strong> {{ usuario.nombre }}
-                        </div>
-                        <div class="user-info-item">
-                            <strong>Email:</strong> {{ usuario.email }}
-                        </div>
-                        <div class="user-info-item">
-                            <strong>Rol:</strong> <span class="user-badge">{{ usuario.get_rol_display }}</span>
-                        </div>
-                    </div>
-                    <div class="user-avatar">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
+                <div>
+                    <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Jefe de Seguridad</div>
                 </div>
             </div>
+        </div>
 
-            <!-- Statistics Section -->
-            <div class="stats-section">
-                <div class="stats-title">
-                    <i class="fas fa-chart-bar"></i>Estadísticas del Sistema
+        <!-- Main Content -->
+        <div class="main-content fade-in">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Panel de Control</h1>
+                <p class="page-subtitle">Gestión integral del sistema de incidentes de seguridad</p>
+            </div>
+
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total|default:0 }}</div>
+                    <div class="stat-label">Total Usuarios</div>
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-number">{{ total_usuarios|default:"0" }}</div>
-                        <div class="stat-label">Usuarios Activos</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{{ total_incidentes|default:"0" }}</div>
-                        <div class="stat-label">Incidentes Totales</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{{ incidentes_pendientes|default:"0" }}</div>
-                        <div class="stat-label">Pendientes</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{{ incidentes_resueltos|default:"0" }}</div>
-                        <div class="stat-label">Resueltos</div>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.jefes|default:0 }}</div>
+                    <div class="stat-label">Jefes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.analistas|default:0 }}</div>
+                    <div class="stat-label">Analistas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.reportantes|default:0 }}</div>
+                    <div class="stat-label">Reportantes</div>
                 </div>
             </div>
 
             <!-- Main Actions -->
-            <div class="action-section">
-                <div class="actions-title">
-                    <i class="fas fa-cogs"></i>Acciones Principales
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Acciones Principales</h2>
+                    <p class="card-description">Gestione usuarios y supervise incidentes del sistema</p>
                 </div>
-                <div class="main-actions">
-                    <!-- Crear Usuario -->
-                    <a href="{% url 'administrador:crear_usuario' %}" class="action-card primary">
-                        <div class="action-icon">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <div class="action-title">Crear Usuario Nuevo</div>
-                        <div class="action-description">
-                            Agregar nuevos usuarios al sistema con roles específicos (Analista o Reportante)
-                        </div>
-                    </a>
+                <div class="card-body">
+                    <div class="actions-grid">
+                        <a href="{% url 'administrador:crear_usuario' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <h3 class="action-title">Crear Usuario</h3>
+                            <p class="action-description">Registrar nuevos miembros del equipo de seguridad con roles específicos</p>
+                        </a>
 
-                    <!-- Ver Incidentes -->
-                    <a href="#" class="action-card secondary" onclick="alert('Funcionalidad de incidentes en desarrollo')">
-                        <div class="action-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
+                        <a href="#" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-list-alt"></i>
+                            </div>
+                            <h3 class="action-title">Ver Incidentes</h3>
+                            <p class="action-description">Revisar y gestionar todos los incidentes reportados en el sistema</p>
+                        </a>
+
+                        <a href="#" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3 class="action-title">Gestionar Usuarios</h3>
+                            <p class="action-description">Administrar permisos y configuraciones de usuarios existentes</p>
+                        </a>
+
+                        <a href="#" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h3 class="action-title">Reportes</h3>
+                            <p class="action-description">Generar reportes estadísticos y análisis de incidentes</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Info -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h2 class="card-title">Información del Sistema</h2>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                        <div>
+                            <h4 style="color: var(--accent-red); margin-bottom: 8px;">Estado del Sistema</h4>
+                            <p style="color: var(--text-secondary);">✓ Operativo</p>
                         </div>
-                        <div class="action-title">Ver Todos los Incidentes</div>
-                        <div class="action-description">
-                            Revisar, analizar y gestionar todos los incidentes de seguridad reportados
+                        <div>
+                            <h4 style="color: var(--accent-red); margin-bottom: 8px;">Última Actualización</h4>
+                            <p style="color: var(--text-secondary);">{{ user.last_login|default:"Primer acceso"|date:"d/m/Y H:i" }}</p>
                         </div>
-                    </a>
+                        <div>
+                            <h4 style="color: var(--accent-red); margin-bottom: 8px;">Tu Rol</h4>
+                            <p style="color: var(--text-secondary);">Administrador del Sistema</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Logout Section -->
-            <div class="logout-section">
-                <a href="{% url 'logout' %}" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i>Cerrar Sesión
+            <div class="text-center mt-4">
+                <a href="{% url 'logout' %}" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
                 </a>
             </div>
         </div>

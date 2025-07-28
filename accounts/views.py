@@ -1,11 +1,33 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .forms import LoginForm
+from .forms import LoginForm, ForgotPasswordForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .decorators import rol_required
+from administrador.administrator_service import AdministratorService
+from django.core.exceptions import ValidationError
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit import UNSAFE
+from django_ratelimit.core import is_ratelimited
+from django.http import HttpResponseForbidden
+
+def rate_limit_exceeded_view(request):
+    """Vista personalizada para mostrar cuando se excede el rate limit de login"""
+    return render(request, 'accounts/rate_limit_exceeded.html')
+
+def forgot_password_rate_limit_view(request):
+    """Vista personalizada para mostrar cuando se excede el rate limit de forgot password"""
+    return render(request, 'accounts/forgot_password_rate_limit.html')
+
+@ratelimit(key='ip', rate='5/5m', method='POST', block=False)
+@ratelimit(key='user_or_ip', rate='10/h', method='POST', block=False)
 def login_view(request):
+    # Verificar si el usuario está siendo rate limited
     if request.method == 'POST':
+        # Verificar rate limit antes de procesar
+        if getattr(request, 'limited', False):
+            return redirect('rate_limit_exceeded')
+        
         form = LoginForm(request.POST)
         if form.is_valid():
             usuario = form.cleaned_data['username']
@@ -67,3 +89,39 @@ def dashboard_reportante(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+@ratelimit(key='ip', rate='3/10m', method='POST', block=False)
+@ratelimit(key='user_or_ip', rate='5/h', method='POST', block=False)
+def forgot_password_view(request):
+    if request.method == 'POST':
+        # Verificar rate limit antes de procesar
+        if getattr(request, 'limited', False):
+            return redirect('forgot_password_rate_limit')
+        
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            
+            try:
+                # Usar el servicio de administrador para restablecer contraseña
+                resultado = AdministratorService.restablecer_contraseña(email)
+                
+                if resultado['success']:
+                    if resultado['correo_enviado']:
+                        messages.success(
+                            request, 
+                            'Se ha enviado una nueva contraseña temporal a tu correo electrónico.'
+                        )
+                    else:
+                        messages.warning(
+                            request,
+                            'Se generó una nueva contraseña, pero hubo un problema enviando el correo. Contacta al administrador.'
+                        )
+                    return redirect('login')
+                    
+            except ValidationError as e:
+                messages.error(request, str(e))
+    else:
+        form = ForgotPasswordForm()
+    
+    return render(request, 'accounts/forgot_password.html', {'form': form})
