@@ -10,7 +10,7 @@ import string
 class AdministratorService:
     
     @staticmethod
-    def generar_contrasenia_temporal():
+    def generar_contrasenia():
         """
         Genera una contraseña temporal segura
         """
@@ -20,7 +20,7 @@ class AdministratorService:
         return contrasenia
     
     @staticmethod
-    def enviar_correo_credenciales(email, nombre, username, contraseña_creada, rol):
+    def enviar_correo_credenciales(email, nombre, username, contrasenia_creada, rol):
         """
         Envía un correo con las credenciales de acceso
         """
@@ -33,7 +33,7 @@ Su cuenta ha sido creada exitosamente en el Sistema de Incidentes de Seguridad.
 
 Credenciales de acceso:
 Usuario: {username}
-Contraseña: {contraseña_creada}
+Contraseña: {contrasenia_creada}
 Rol asignado: {dict(Usuario.ROL_CHOICES)[rol]}
 
 INSTRUCCIONES IMPORTANTES:
@@ -79,25 +79,25 @@ Sistema de Gestión de Incidentes de Seguridad
         
         try:
             # Generar contraseña temporal
-            contrasenia_creada = AdministratorService.generar_contrasenia_temporal()
+            contrasenia_nueva = AdministratorService.generar_contrasenia()
             
             # Crear usuario
             usuario = Usuario.objects.create(
                 username=username,
                 email=email,
-                password=make_password(contrasenia_creada),
+                password=make_password(contrasenia_nueva),
                 nombre=nombre,
                 rol=rol
             )
             
             # Enviar correo con credenciales
             correo_enviado = AdministratorService.enviar_correo_credenciales(
-                email, nombre, username, contrasenia_creada, rol
+                email, nombre, username, contrasenia_nueva, rol
             )
             
             # Agregar información del estado del correo al usuario
             usuario.correo_enviado = correo_enviado
-            usuario.contraseña_temporal = contrasenia_creada
+            usuario.contraseña_temporal = contrasenia_nueva
             
             return usuario
             
@@ -168,7 +168,7 @@ Sistema de Gestión de Incidentes de Seguridad
             raise ValidationError(f"Error al eliminar usuario: {str(e)}")
     
     @staticmethod
-    def restablecer_contraseña(email):
+    def restablecer_contrasenia(email):
         """
         Restablece la contraseña de un usuario y envía nueva contraseña por correo
         """
@@ -177,7 +177,7 @@ Sistema de Gestión de Incidentes de Seguridad
             usuario = Usuario.objects.get(email=email)
             
             # Generar nueva contraseña temporal
-            nueva_contrasenia = AdministratorService.generar_contrasenia_temporal()
+            nueva_contrasenia = AdministratorService.generar_contrasenia()
             
             # Actualizar contraseña en la base de datos
             usuario.password = make_password(nueva_contrasenia)
@@ -200,7 +200,7 @@ Sistema de Gestión de Incidentes de Seguridad
             raise ValidationError(f"Error al restablecer contraseña: {str(e)}")
     
     @staticmethod
-    def enviar_correo_restablecimiento(email, nombre, nueva_contraseña):
+    def enviar_correo_restablecimiento(email, nombre, nueva_contrasenia):
         """
         Envía correo con la nueva contraseña temporal
         """
@@ -211,7 +211,7 @@ Estimado/a {nombre},
 
 Has solicitado restablecer tu contraseña para el Sistema de Gestión de Incidentes de Seguridad.
 
-Tu nueva contraseña es: {nueva_contraseña}
+Tu nueva contraseña es: {nueva_contrasenia}
 
 INSTRUCCIONES IMPORTANTES:
 1. Inicia sesión con tu usuario y esta contraseña

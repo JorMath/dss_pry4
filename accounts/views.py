@@ -104,7 +104,7 @@ def forgot_password_view(request):
             
             try:
                 # Usar el servicio de administrador para restablecer contraseña
-                resultado = AdministratorService.restablecer_contraseña(email)
+                resultado = AdministratorService.restablecer_contrasenia(email)
                 
                 if resultado['success']:
                     if resultado['correo_enviado']:
