@@ -25,8 +25,8 @@ def crear_usuario_view(request):
                     messages.success(request, f'Usuario {usuario.username} creado exitosamente. Se ha enviado un correo con las credenciales a {usuario.email_plain}')
                 else:
                     # El usuario se creó pero el correo falló
-                    contraseña_temp = getattr(usuario, 'contraseña_temporal', 'No disponible')
-                    messages.warning(request, f'Usuario {usuario.username} creado exitosamente, pero hubo un problema enviando el correo. Contraseña temporal: {contraseña_temp}')
+                    contrasena_temp = getattr(usuario, 'contraseña_temporal', 'No disponible')
+                    messages.warning(request, f'Usuario {usuario.username} creado exitosamente, pero hubo un problema enviando el correo. Contraseña temporal: {contrasena_temp}')
                 
                 return redirect('administrador:crear_usuario')
             except ValidationError as e:

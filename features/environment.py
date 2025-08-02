@@ -16,7 +16,7 @@ def before_scenario(context, scenario):
     """Configuración antes de cada escenario"""
     pass
 
-def after_scenario(context, scenario):
+def after_scenario(context, _):
     """Limpieza después de cada escenario"""
     # Limpiar datos de prueba con compatibilidad para campos cifrados
     try:
@@ -36,6 +36,6 @@ def after_scenario(context, scenario):
         Incidente.objects.filter(descripcion__icontains='test').delete()
         Incidente.objects.filter(descripcion__icontains='bug permite escribir').delete()
         
-    except Exception as e:
+    except Exception:
         # No fallar si hay problemas con la limpieza
         pass

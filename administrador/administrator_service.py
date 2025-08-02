@@ -53,7 +53,7 @@ Sistema de Gestión de Incidentes de Seguridad
                 fail_silently=False,
             )
             return True
-        except Exception as e:
+        except Exception:
             return False
     
     @staticmethod
