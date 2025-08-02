@@ -11,6 +11,9 @@ from django_ratelimit import UNSAFE
 from django_ratelimit.core import is_ratelimited
 from django.http import HttpResponseForbidden
 
+# Constantes de templates
+LOGIN_TEMPLATE = 'accounts/login.html'
+
 def rate_limit_exceeded_view(request):
     """Vista personalizada para mostrar cuando se excede el rate limit de login"""
     return render(request, 'accounts/rate_limit_exceeded.html')
@@ -35,7 +38,7 @@ def login_view(request):
     # Verificar si el usuario está siendo rate limited
     if request.method != 'POST':
         form = LoginForm()
-        return render(request, 'accounts/login.html', {'form': form})
+        return render(request, LOGIN_TEMPLATE, {'form': form})
     
     # Verificar rate limit antes de procesar
     if getattr(request, 'limited', False):
@@ -43,7 +46,7 @@ def login_view(request):
     
     form = LoginForm(request.POST)
     if not form.is_valid():
-        return render(request, 'accounts/login.html', {'form': form})
+        return render(request, LOGIN_TEMPLATE, {'form': form})
     
     usuario = form.cleaned_data['username']
     password = form.cleaned_data['password']
@@ -54,7 +57,7 @@ def login_view(request):
         return _redirect_by_role(user)
     else:
         messages.error(request, 'Credenciales incorrectas')
-        return render(request, 'accounts/login.html', {'form': form})
+        return render(request, LOGIN_TEMPLATE, {'form': form})
 @login_required
 @rol_required('jefe')
 def dashboard_jefe(request):
@@ -114,6 +117,29 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+def _process_password_reset(request, email):
+    """Función auxiliar para procesar el restablecimiento de contraseña"""
+    try:
+        # Usar el servicio de administrador para restablecer contraseña
+        resultado = AdministratorService.restablecer_contrasenia(email)
+        
+        if resultado['success']:
+            if resultado['correo_enviado']:
+                messages.success(
+                    request, 
+                    'Se ha enviado una nueva contraseña temporal a tu correo electrónico.'
+                )
+            else:
+                messages.warning(
+                    request,
+                    'Se generó una nueva contraseña, pero hubo un problema enviando el correo. Contacta al administrador.'
+                )
+            return redirect('login')
+                
+    except ValidationError as e:
+        messages.error(request, str(e))
+    return None
+
 @ratelimit(key='ip', rate='3/10m', method='POST', block=False)
 @ratelimit(key='user_or_ip', rate='5/h', method='POST', block=False)
 def forgot_password_view(request):
@@ -126,25 +152,10 @@ def forgot_password_view(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             
-            try:
-                # Usar el servicio de administrador para restablecer contraseña
-                resultado = AdministratorService.restablecer_contrasenia(email)
-                
-                if resultado['success']:
-                    if resultado['correo_enviado']:
-                        messages.success(
-                            request, 
-                            'Se ha enviado una nueva contraseña temporal a tu correo electrónico.'
-                        )
-                    else:
-                        messages.warning(
-                            request,
-                            'Se generó una nueva contraseña, pero hubo un problema enviando el correo. Contacta al administrador.'
-                        )
-                    return redirect('login')
-                    
-            except ValidationError as e:
-                messages.error(request, str(e))
+            # Procesar el restablecimiento de contraseña
+            reset_result = _process_password_reset(request, email)
+            if reset_result:
+                return reset_result
     else:
         form = ForgotPasswordForm()
     
