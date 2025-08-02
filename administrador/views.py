@@ -22,7 +22,7 @@ def crear_usuario_view(request):
                 )
                 
                 if hasattr(usuario, 'correo_enviado') and usuario.correo_enviado:
-                    messages.success(request, f'Usuario {usuario.username} creado exitosamente. Se ha enviado un correo con las credenciales a {usuario.email}')
+                    messages.success(request, f'Usuario {usuario.username} creado exitosamente. Se ha enviado un correo con las credenciales a {usuario.email_plain}')
                 else:
                     # El usuario se creó pero el correo falló
                     contraseña_temp = getattr(usuario, 'contraseña_temporal', 'No disponible')

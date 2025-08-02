@@ -65,7 +65,8 @@ Sistema de Gestión de Incidentes de Seguridad
         if Usuario.objects.filter(username=username).exists():
             raise ValidationError("El nombre de usuario ya existe")
         
-        if Usuario.objects.filter(email=email).exists():
+        # Usar el método filter_by_email para verificar email cifrado
+        if Usuario.objects.filter_by_email(email).exists():
             raise ValidationError("El email ya está registrado")
         
         # Validar formato de email
@@ -81,11 +82,11 @@ Sistema de Gestión de Incidentes de Seguridad
             # Generar contraseña temporal
             contrasenia_nueva = AdministratorService.generar_contrasenia()
             
-            # Crear usuario
-            usuario = Usuario.objects.create(
+            # Crear usuario usando create_user para manejar el cifrado automáticamente
+            usuario = Usuario.objects.create_user(
                 username=username,
                 email=email,
-                password=make_password(contrasenia_nueva),
+                password=contrasenia_nueva,
                 nombre=nombre,
                 rol=rol
             )
@@ -173,8 +174,8 @@ Sistema de Gestión de Incidentes de Seguridad
         Restablece la contraseña de un usuario y envía nueva contraseña por correo
         """
         try:
-            # Buscar usuario por email
-            usuario = Usuario.objects.get(email=email)
+            # Buscar usuario por email usando el manager personalizado
+            usuario = Usuario.objects.get_by_email(email)
             
             # Generar nueva contraseña temporal
             nueva_contrasenia = AdministratorService.generar_contrasenia()
@@ -183,9 +184,9 @@ Sistema de Gestión de Incidentes de Seguridad
             usuario.password = make_password(nueva_contrasenia)
             usuario.save()
             
-            # Enviar correo con nueva contraseña
+            # Enviar correo con nueva contraseña usando el email descifrado
             correo_enviado = AdministratorService.enviar_correo_restablecimiento(
-                email, usuario.nombre or usuario.username, nueva_contrasenia
+                usuario.email_plain, usuario.nombre or usuario.username, nueva_contrasenia
             )
             
             return {
@@ -233,5 +234,8 @@ Sistema de Gestión de Incidentes de Seguridad
             )
             return True
         except Exception as e:
-            print(f"Error enviando correo de restablecimiento: {e}")
+            # Log del error en lugar de print
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error enviando correo de restablecimiento: {e}")
             return False

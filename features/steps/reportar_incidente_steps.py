@@ -20,11 +20,13 @@ def step_dado_usuario_con_incidente_data(context, tipo, descripcion, fecha):
     # Crear usuario reportante de prueba
     context.usuario_reportante = Usuario.objects.create_user(
         username='test_reportante',
-        email='reportante@test.com',
         password='password123',
-        rol='reportante',
-        nombre='Usuario Reportante Test'
+        rol='reportante'
     )
+    # Establecer email usando la nueva propiedad
+    context.usuario_reportante.email_plain = 'reportante@test.com'
+    context.usuario_reportante.nombre = 'Usuario Reportante Test'
+    context.usuario_reportante.save()
     
     # Mapear tipo desde la especificación al modelo
     tipo_mapping = {
@@ -91,5 +93,7 @@ def step_entonces_notificacion_reporte(context):
 
 def cleanup_test_data(context):
     """Limpiar datos de prueba"""
-    Usuario.objects.filter(email__contains='@test.com').delete()
-    Incidente.objects.filter(reportado_por__email__contains='@test.com').delete()
+    test_users = Usuario.objects.filter_by_email_contains('@test.com')
+    test_user_ids = [user.id for user in test_users]
+    Incidente.objects.filter(reportado_por__id__in=test_user_ids).delete()
+    test_users.delete()

@@ -156,10 +156,13 @@ STATICFILES_DIRS = [
     BASE_DIR / 'accounts' / 'static',
 ]
 
+# Static files configuration based on environment
 if not env('DEBUG'):
-    print("Modo PRODUCCIÓN: Los archivos estáticos deben servirse desde STATIC_ROOT")
+    # Production mode: Static files should be served from STATIC_ROOT
+    pass
 else:
-    print("Modo DESARROLLO: Django sirve archivos estáticos directamente")
+    # Development mode: Django serves static files directly
+    pass
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

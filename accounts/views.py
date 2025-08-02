@@ -51,6 +51,9 @@ def login_view(request):
 @rol_required('jefe')
 def dashboard_jefe(request):
     from .models import Usuario
+    from incidentes.models import Incidente
+    from django.utils import timezone
+    from datetime import datetime
     
     # Obtener estadísticas de usuarios
     total_usuarios = Usuario.objects.count()
@@ -58,20 +61,33 @@ def dashboard_jefe(request):
     usuarios_reportantes = Usuario.objects.filter(rol='reportante').count()
     usuarios_jefes = Usuario.objects.filter(rol='jefe').count()
     
-    # Estadísticas de incidentes (por ahora simuladas)
-    total_incidentes = 0  # TODO: Cuando se implemente el módulo de incidentes
-    incidentes_pendientes = 0
-    incidentes_resueltos = 0
+    # Estadísticas de incidentes
+    total_incidentes = Incidente.objects.count()
+    incidentes_pendientes = Incidente.objects.filter(estado='pendiente').count()
+    incidentes_criticos = Incidente.objects.filter(gravedad='critica').count()
+    
+    # Incidentes del mes actual
+    mes_actual = timezone.now().month
+    año_actual = timezone.now().year
+    incidentes_mes_actual = Incidente.objects.filter(
+        fecha_reporte__month=mes_actual,
+        fecha_reporte__year=año_actual
+    ).count()
+    
+    stats = {
+        'total_usuarios': total_usuarios,
+        'jefes': usuarios_jefes,
+        'analistas': usuarios_analistas,
+        'reportantes': usuarios_reportantes,
+        'total_incidentes': total_incidentes,
+        'incidentes_pendientes': incidentes_pendientes,
+        'incidentes_criticos': incidentes_criticos,
+        'incidentes_mes_actual': incidentes_mes_actual,
+    }
     
     context = {
         'usuario': request.user,
-        'total_usuarios': total_usuarios,
-        'usuarios_analistas': usuarios_analistas,
-        'usuarios_reportantes': usuarios_reportantes,
-        'usuarios_jefes': usuarios_jefes,
-        'total_incidentes': total_incidentes,
-        'incidentes_pendientes': incidentes_pendientes,
-        'incidentes_resueltos': incidentes_resueltos,
+        'stats': stats,
     }
     
     return render(request, 'accounts/dashboard_jefe.html', context)

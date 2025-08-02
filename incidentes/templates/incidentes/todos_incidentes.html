@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Incidentes - Sistema de Seguridad</title>
+    <title>Todos los Incidentes - Sistema de Seguridad</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2030">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,10 +22,10 @@
                 </div>
                 <div>
                     <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Usuario Reportante</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Jefe de Seguridad</div>
                 </div>
-                <a href="{% url 'dashboard_reportante' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;" title="Ir al Dashboard">
-                    <i class="fas fa-tachometer-alt"></i>
+                <a href="{% url 'dashboard_jefe' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;" title="Dashboard Principal">
+                    <i class="fas fa-home"></i>
                     Dashboard
                 </a>
                 <a href="{% url 'logout' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
@@ -38,19 +38,14 @@
         <!-- Breadcrumb Navigation -->
         <div class="breadcrumb-container" style="background: #f8f9fa; padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-200);">
             <nav class="breadcrumb" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
-                <a href="{% url 'dashboard_reportante' %}" style="color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
+                <a href="{% url 'dashboard_jefe' %}" style="color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
                     <i class="fas fa-home"></i>
                     Dashboard
                 </a>
                 <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 0.7rem;"></i>
-                <a href="{% url 'incidentes:dashboard_reportante_incidentes' %}" style="color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
-                    <i class="fas fa-bug"></i>
-                    Incidentes
-                </a>
-                <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 0.7rem;"></i>
                 <span style="color: var(--secondary-color); font-weight: 500; font-size: 0.9rem;">
                     <i class="fas fa-list-alt"></i>
-                    Mis Incidentes
+                    Todos los Incidentes
                 </span>
             </nav>
         </div>
@@ -66,54 +61,119 @@
                 {% endfor %}
             {% endif %}
 
-            <!-- Quick Actions -->
+            <!-- Page Header -->
             <div class="actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding: 1.5rem; background: #ffffff; border: 1px solid var(--gray-200); border-radius: var(--border-radius); box-shadow: var(--card-shadow);">
                 <div>
                     <h1 class="page-title" style="margin: 0; font-size: 1.5rem;">
                         <i class="fas fa-list-alt" style="color: var(--accent-orange); margin-right: 0.8rem;"></i>
-                        Mis Incidentes Reportados
+                        Todos los Incidentes del Sistema
                     </h1>
                     <p style="margin: 0.5rem 0 0 0; color: var(--text-muted); font-size: 0.9rem;">Total: {{ total_incidentes }} incidente{{ total_incidentes|pluralize }}</p>
                 </div>
                 <div class="action-buttons">
-                    <a href="{% url 'dashboard_reportante' %}" class="btn btn-outline" style="margin-right: 0.5rem;">
+                    <a href="{% url 'dashboard_jefe' %}" class="btn btn-outline" style="margin-right: 0.5rem;">
                         <i class="fas fa-arrow-left"></i>
                         Volver al Dashboard
-                    </a>
-                    <a href="{% url 'incidentes:reportar_incidente' %}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i>
-                        Nuevo Incidente
                     </a>
                 </div>
             </div>
 
+            <!-- Filters -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-filter" style="color: var(--accent-orange); margin-right: 0.5rem;"></i>
+                        Filtros
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="filters-form">
+                        <div class="filter-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                            <div class="form-group">
+                                <label for="año">Año:</label>
+                                <select name="año" id="año" class="form-control">
+                                    <option value="">Todos los años</option>
+                                    {% for año in años_disponibles %}
+                                        <option value="{{ año }}" {% if filtros.año == año|stringformat:"s" %}selected{% endif %}>{{ año }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="mes">Mes:</label>
+                                <select name="mes" id="mes" class="form-control">
+                                    <option value="">Todos los meses</option>
+                                    {% for mes_num, mes_nombre in meses %}
+                                        <option value="{{ mes_num }}" {% if filtros.mes == mes_num|stringformat:"s" %}selected{% endif %}>{{ mes_nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="estado">Estado:</label>
+                                <select name="estado" id="estado" class="form-control">
+                                    <option value="">Todos los estados</option>
+                                    {% for estado_val, estado_name in estados_choices %}
+                                        <option value="{{ estado_val }}" {% if filtros.estado == estado_val %}selected{% endif %}>{{ estado_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="gravedad">Gravedad:</label>
+                                <select name="gravedad" id="gravedad" class="form-control">
+                                    <option value="">Todas las gravedades</option>
+                                    {% for grav_val, grav_name in gravedad_choices %}
+                                        <option value="{{ grav_val }}" {% if filtros.gravedad == grav_val %}selected{% endif %}>{{ grav_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i>
+                                    Filtrar
+                                </button>
+                                <a href="{% url 'incidentes:ver_todos_incidentes' %}" class="btn btn-secondary" style="margin-left: 0.5rem;">
+                                    <i class="fas fa-times"></i>
+                                    Limpiar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Stats Cards -->
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                <div class="stat-card" style="background: white; border: 2px solid #FF6B35; color: #FF6B35;">
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div class="stat-card">
                     <div class="stat-content">
-                        <div class="stat-number" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">{{ stats.pendientes }}</div>
-                        <div class="stat-label" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">Pendientes</div>
+                        <div class="stat-number">{{ stats.pendientes }}</div>
+                        <div class="stat-label">Pendientes</div>
                     </div>
                 </div>
                 
-                <div class="stat-card" style="background: white; border: 2px solid #4ECDC4; color: #4ECDC4;">
+                <div class="stat-card">
                     <div class="stat-content">
-                        <div class="stat-number" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">{{ stats.en_proceso }}</div>
-                        <div class="stat-label" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">En Proceso</div>
+                        <div class="stat-number">{{ stats.en_proceso }}</div>
+                        <div class="stat-label">En Proceso</div>
                     </div>
                 </div>
                 
-                <div class="stat-card" style="background: white; border: 2px solid #45B7D1; color: #45B7D1;">
+                <div class="stat-card">
                     <div class="stat-content">
-                        <div class="stat-number" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">{{ stats.resueltos }}</div>
-                        <div class="stat-label" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">Resueltos</div>
+                        <div class="stat-number">{{ stats.resueltos }}</div>
+                        <div class="stat-label">Resueltos</div>
                     </div>
                 </div>
                 
-                <div class="stat-card" style="background: white; border: 2px solid #F093FB; color: #F093FB;">
+                <div class="stat-card">
                     <div class="stat-content">
-                        <div class="stat-number" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">{{ stats.criticos }}</div>
-                        <div class="stat-label" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">Críticos</div>
+                        <div class="stat-number">{{ stats.criticos }}</div>
+                        <div class="stat-label">Críticos</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.total }}</div>
+                        <div class="stat-label">Total Filtrados</div>
                     </div>
                 </div>
             </div>
@@ -134,6 +194,7 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 60px;">ID</th>
+                                        <th>Reportado por</th>
                                         <th>Tipo</th>
                                         <th>Descripción</th>
                                         <th style="width: 120px;">Estado</th>
@@ -147,6 +208,12 @@
                                     <tr>
                                         <td>
                                             <span class="incident-id">#{{ incidente.id }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="reporter-info">
+                                                <i class="fas fa-user" style="color: var(--accent-orange); margin-right: 0.5rem;"></i>
+                                                {{ incidente.reportado_por.nombre|default:incidente.reportado_por.username }}
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="incident-type">
@@ -186,10 +253,10 @@
                         <div class="pagination-container" style="display: flex; justify-content: center; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--gray-200);">
                             <div class="pagination">
                                 {% if page_obj.has_previous %}
-                                    <a href="?page=1" class="pagination-btn" title="Primera página">
+                                    <a href="?page=1{% if filtros.mes %}&mes={{ filtros.mes }}{% endif %}{% if filtros.año %}&año={{ filtros.año }}{% endif %}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.gravedad %}&gravedad={{ filtros.gravedad }}{% endif %}" class="pagination-btn" title="Primera página">
                                         <i class="fas fa-angle-double-left"></i>
                                     </a>
-                                    <a href="?page={{ page_obj.previous_page_number }}" class="pagination-btn" title="Página anterior">
+                                    <a href="?page={{ page_obj.previous_page_number }}{% if filtros.mes %}&mes={{ filtros.mes }}{% endif %}{% if filtros.año %}&año={{ filtros.año }}{% endif %}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.gravedad %}&gravedad={{ filtros.gravedad }}{% endif %}" class="pagination-btn" title="Página anterior">
                                         <i class="fas fa-angle-left"></i>
                                     </a>
                                 {% endif %}
@@ -199,10 +266,10 @@
                                 </span>
 
                                 {% if page_obj.has_next %}
-                                    <a href="?page={{ page_obj.next_page_number }}" class="pagination-btn" title="Página siguiente">
+                                    <a href="?page={{ page_obj.next_page_number }}{% if filtros.mes %}&mes={{ filtros.mes }}{% endif %}{% if filtros.año %}&año={{ filtros.año }}{% endif %}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.gravedad %}&gravedad={{ filtros.gravedad }}{% endif %}" class="pagination-btn" title="Página siguiente">
                                         <i class="fas fa-angle-right"></i>
                                     </a>
-                                    <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-btn" title="Última página">
+                                    <a href="?page={{ page_obj.paginator.num_pages }}{% if filtros.mes %}&mes={{ filtros.mes }}{% endif %}{% if filtros.año %}&año={{ filtros.año }}{% endif %}{% if filtros.estado %}&estado={{ filtros.estado }}{% endif %}{% if filtros.gravedad %}&gravedad={{ filtros.gravedad }}{% endif %}" class="pagination-btn" title="Última página">
                                         <i class="fas fa-angle-double-right"></i>
                                     </a>
                                 {% endif %}
@@ -212,14 +279,18 @@
 
                     {% else %}
                         <div class="empty-state" style="text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
-                            <i class="fas fa-clipboard-list" style="font-size: 4rem; color: var(--gray-300); margin-bottom: 1.5rem;"></i>
-                            <h3 style="margin-bottom: 1rem; color: var(--secondary-color);">No has reportado incidentes</h3>
+                            <i class="fas fa-search" style="font-size: 4rem; color: var(--gray-300); margin-bottom: 1.5rem;"></i>
+                            <h3 style="margin-bottom: 1rem; color: var(--secondary-color);">No se encontraron incidentes</h3>
                             <p style="margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
-                                Cuando reportes incidentes de seguridad, aparecerán aquí para que puedas hacer seguimiento.
+                                {% if filtros.mes or filtros.año or filtros.estado or filtros.gravedad %}
+                                    No hay incidentes que coincidan con los filtros seleccionados.
+                                {% else %}
+                                    No hay incidentes registrados en el sistema.
+                                {% endif %}
                             </p>
-                            <a href="{% url 'incidentes:reportar_incidente' %}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i>
-                                Reportar Primer Incidente
+                            <a href="{% url 'incidentes:ver_todos_incidentes' %}" class="btn btn-primary">
+                                <i class="fas fa-refresh"></i>
+                                Ver Todos los Incidentes
                             </a>
                         </div>
                     {% endif %}
@@ -229,6 +300,7 @@
     </div>
 
     <style>
+        /* Breadcrumb Styles */
         .breadcrumb-container {
             background: #f8f9fa;
             border-bottom: 1px solid var(--gray-200);
@@ -263,6 +335,13 @@
             box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
         }
 
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
         .incident-id {
             font-weight: 600;
             color: var(--accent-orange);
@@ -278,6 +357,12 @@
         .incident-type i {
             color: var(--accent-orange);
             width: 16px;
+        }
+
+        .reporter-info {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
         }
 
         .incident-description {
@@ -300,7 +385,7 @@
             border: 1px solid rgba(255, 107, 53, 0.3);
         }
 
-        .status-en_proceso {
+        .status-en_revision, .status-en_proceso {
             background: rgba(255, 193, 7, 0.15);
             color: #e17055;
             border: 1px solid rgba(255, 193, 7, 0.3);

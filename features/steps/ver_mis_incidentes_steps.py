@@ -108,5 +108,7 @@ def step_entonces_permitir_regresar(context):
 
 def cleanup_test_data(context):
     """Limpiar datos de prueba"""
-    Usuario.objects.filter(email__contains='@test.com').delete()
-    Incidente.objects.filter(reportado_por__email__contains='@test.com').delete()
+    test_users = Usuario.objects.filter_by_email_contains('@test.com')
+    test_user_ids = [user.id for user in test_users]
+    Incidente.objects.filter(reportado_por__id__in=test_user_ids).delete()
+    test_users.delete()

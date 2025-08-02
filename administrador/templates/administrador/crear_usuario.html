@@ -24,11 +24,30 @@
                     <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
                     <div style="font-size: 12px; color: var(--text-muted);">Jefe de Seguridad</div>
                 </div>
+                <a href="{% url 'dashboard_jefe' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;" title="Dashboard Principal">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
                 <a href="{% url 'logout' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
                     <i class="fas fa-sign-out-alt"></i>
                     Salir
                 </a>
             </div>
+        </div>
+
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb-container" style="background: #f8f9fa; padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-200);">
+            <nav class="breadcrumb" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <a href="{% url 'dashboard_jefe' %}" style="color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 0.7rem;"></i>
+                <span style="color: var(--secondary-color); font-weight: 500; font-size: 0.9rem;">
+                    <i class="fas fa-user-plus"></i>
+                    Crear Usuario
+                </span>
+            </nav>
         </div>
 
         <!-- Main Content -->
@@ -180,5 +199,18 @@
             </div>
         </div>
     </div>
+
+    <style>
+        /* Breadcrumb Styles */
+        .breadcrumb-container {
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-color) !important;
+            text-decoration: underline;
+        }
+    </style>
 </body>
 </html>

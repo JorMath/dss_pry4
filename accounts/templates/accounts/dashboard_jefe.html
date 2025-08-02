@@ -37,20 +37,20 @@
             <!-- Statistics Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number">{{ stats.total|default:0 }}</div>
+                    <div class="stat-number">{{ stats.total_usuarios|default:0 }}</div>
                     <div class="stat-label">Total Usuarios</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">{{ stats.jefes|default:0 }}</div>
-                    <div class="stat-label">Jefes</div>
+                    <div class="stat-number">{{ stats.total_incidentes|default:0 }}</div>
+                    <div class="stat-label">Total Incidentes</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">{{ stats.analistas|default:0 }}</div>
-                    <div class="stat-label">Analistas</div>
+                    <div class="stat-number">{{ stats.incidentes_pendientes|default:0 }}</div>
+                    <div class="stat-label">Pendientes</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">{{ stats.reportantes|default:0 }}</div>
-                    <div class="stat-label">Reportantes</div>
+                    <div class="stat-number">{{ stats.incidentes_criticos|default:0 }}</div>
+                    <div class="stat-label">Críticos</div>
                 </div>
             </div>
 
@@ -70,28 +70,12 @@
                             <p class="action-description">Registrar nuevos miembros del equipo de seguridad con roles específicos</p>
                         </a>
 
-                        <a href="#" class="action-card">
+                        <a href="{% url 'incidentes:ver_todos_incidentes' %}" class="action-card">
                             <div class="action-icon">
                                 <i class="fas fa-list-alt"></i>
                             </div>
-                            <h3 class="action-title">Ver Incidentes</h3>
-                            <p class="action-description">Revisar y gestionar todos los incidentes reportados en el sistema</p>
-                        </a>
-
-                        <a href="#" class="action-card">
-                            <div class="action-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <h3 class="action-title">Gestionar Usuarios</h3>
-                            <p class="action-description">Administrar permisos y configuraciones de usuarios existentes</p>
-                        </a>
-
-                        <a href="#" class="action-card">
-                            <div class="action-icon">
-                                <i class="fas fa-chart-bar"></i>
-                            </div>
-                            <h3 class="action-title">Reportes</h3>
-                            <p class="action-description">Generar reportes estadísticos y análisis de incidentes</p>
+                            <h3 class="action-title">Ver Todos los Incidentes</h3>
+                            <p class="action-description">Revisar y gestionar todos los incidentes reportados con filtros por mes</p>
                         </a>
                     </div>
                 </div>

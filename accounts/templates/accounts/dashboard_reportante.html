@@ -46,7 +46,7 @@
 
             <!-- Quick Actions Grid -->
             <div class="roles-grid" style="margin-bottom: 3rem;">
-                <div class="role-card" onclick="location.href='{% url 'incidentes:reportar_incidente' %}'" style="cursor: pointer;">
+                <div class="role-card">
                     <div class="role-icon">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
@@ -60,7 +60,7 @@
                     </div>
                 </div>
 
-                <div class="role-card" onclick="location.href='{% url 'incidentes:mis_incidentes' %}'" style="cursor: pointer;">
+                <div class="role-card">
                     <div class="role-icon">
                         <i class="fas fa-list-alt"></i>
                     </div>
@@ -70,20 +70,6 @@
                         <a href="{% url 'incidentes:mis_incidentes' %}" class="btn btn-primary">
                             <i class="fas fa-eye"></i>
                             Ver Lista
-                        </a>
-                    </div>
-                </div>
-
-                <div class="role-card" onclick="location.href='{% url 'incidentes:dashboard_reportante_incidentes' %}'" style="cursor: pointer;">
-                    <div class="role-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h4>Dashboard Incidentes</h4>
-                    <p>Visualiza estadísticas y métricas de tus incidentes reportados con gráficos y resúmenes.</p>
-                    <div class="role-actions">
-                        <a href="{% url 'incidentes:dashboard_reportante_incidentes' %}" class="btn btn-primary">
-                            <i class="fas fa-tachometer-alt"></i>
-                            Ver Dashboard
                         </a>
                     </div>
                 </div>
@@ -123,7 +109,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Email</div>
-                                <div class="info-value">{{ usuario.email }}</div>
+                                <div class="info-value">{{ usuario.email_plain }}</div>
                             </div>
                         </div>
 

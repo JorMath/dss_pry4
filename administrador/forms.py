@@ -33,6 +33,11 @@ class CrearUsuarioForm(forms.Form):
     
     def clean_email(self):
         email = self.cleaned_data['email']
-        if Usuario.objects.filter(email=email).exists():
+        # Usar el método personalizado para verificar si el email ya existe
+        try:
+            Usuario.objects.get_by_email(email)
             raise forms.ValidationError("Este email ya está registrado")
+        except Usuario.DoesNotExist:
+            # Email no existe, está bien
+            pass
         return email
