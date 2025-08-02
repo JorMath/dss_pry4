@@ -170,12 +170,8 @@ def ver_todos_incidentes(request):
         ('rechazado', 'Rechazado'),
     ]
     
-    gravedad_choices = [
-        ('baja', 'Baja'),
-        ('media', 'Media'),
-        ('alta', 'Alta'),
-        ('critica', 'Crítica'),
-    ]
+    # Usar las opciones definidas en el modelo
+    gravedad_choices = Incidente.OPCIONES_GRAVEDAD
     
     context = {
         'incidentes': incidentes,

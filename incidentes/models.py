@@ -23,7 +23,7 @@ class Incidente(models.Model):
         ('cerrado', 'Cerrado'),
     ]
     
-    GRAVEDAD = [
+    OPCIONES_GRAVEDAD = [
         ('baja', 'Baja'),
         ('media', 'Media'),
         ('alta', 'Alta'),
@@ -51,7 +51,7 @@ class Incidente(models.Model):
     )
     gravedad = models.CharField(
         max_length=20,
-        choices=GRAVEDAD,
+        choices=OPCIONES_GRAVEDAD,
         default='media',
         verbose_name='Gravedad'
     )
