@@ -159,10 +159,9 @@ STATICFILES_DIRS = [
 # Static files configuration based on environment
 if not env('DEBUG'):
     # Production mode: Static files should be served from STATIC_ROOT
-    pass
-else:
-    # Development mode: Django serves static files directly
-    pass
+    # In production, you might want to set additional static file settings
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    # You can add more production-specific static file settings here
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
