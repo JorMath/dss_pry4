@@ -13,7 +13,7 @@ class UsuarioManager(UserManager):
             try:
                 if user.email_plain == email_plain:
                     return user
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 # Si hay error al descifrar, continuar con el siguiente
                 continue
         
@@ -28,7 +28,7 @@ class UsuarioManager(UserManager):
             try:
                 if user.email_plain == email_plain:
                     matching_users.append(user.pk)
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 # Si hay error al descifrar, continuar con el siguiente
                 continue
         
@@ -46,7 +46,7 @@ class UsuarioManager(UserManager):
                 plain_email = user.email_plain
                 if plain_email and email_substring in plain_email:
                     matching_users.append(user.pk)
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 # Si hay error al descifrar, ignorar este usuario
                 continue
         
@@ -113,7 +113,7 @@ class Usuario(AbstractUser):
                 else:
                     # Email muy corto o sin características de base64, no está cifrado
                     is_encrypted = False
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 # Si hay excepción al descifrar, definitivamente no está cifrado
                 is_encrypted = False
             
@@ -129,7 +129,8 @@ class Usuario(AbstractUser):
         if self.email:
             try:
                 return FieldEncryption.decrypt(self.email)
-            except:
+            except (ValueError, TypeError, Exception):
+                # Si hay error al descifrar, asumir que es texto plano
                 return self.email
         return self.email
     

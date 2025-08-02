@@ -85,7 +85,7 @@ def ver_todos_incidentes(request):
     
     # Obtener parámetros de filtro
     mes_filtro = request.GET.get('mes')
-    año_filtro = request.GET.get('año')
+    anio_filtro = request.GET.get('año')
     estado_filtro = request.GET.get('estado')
     gravedad_filtro = request.GET.get('gravedad')
     
@@ -93,20 +93,20 @@ def ver_todos_incidentes(request):
     incidentes_query = Incidente.objects.all()
     
     # Aplicar filtros
-    if mes_filtro and año_filtro:
+    if mes_filtro and anio_filtro:
         try:
             mes = int(mes_filtro)
-            año = int(año_filtro)
+            anio = int(anio_filtro)
             incidentes_query = incidentes_query.filter(
                 fecha_reporte__month=mes,
-                fecha_reporte__year=año
+                fecha_reporte__year=anio
             )
         except (ValueError, TypeError):
             pass
-    elif año_filtro:
+    elif anio_filtro:
         try:
-            año = int(año_filtro)
-            incidentes_query = incidentes_query.filter(fecha_reporte__year=año)
+            anio = int(anio_filtro)
+            incidentes_query = incidentes_query.filter(fecha_reporte__year=anio)
         except (ValueError, TypeError):
             pass
     elif mes_filtro:
@@ -140,19 +140,19 @@ def ver_todos_incidentes(request):
     }
     
     # Generar opciones para el filtro de meses y años
-    año_actual = timezone.now().year
+    anio_actual = timezone.now().year
     
     # Obtener años de incidentes existentes
-    años_con_incidentes = Incidente.objects.dates('fecha_reporte', 'year').values_list('fecha_reporte__year', flat=True)
-    if años_con_incidentes:
-        año_min = min(años_con_incidentes)
-        año_max = max(max(años_con_incidentes), año_actual)
-        años_disponibles = list(range(año_min, año_max + 1))
+    anios_con_incidentes = Incidente.objects.dates('fecha_reporte', 'year').values_list('fecha_reporte__year', flat=True)
+    if anios_con_incidentes:
+        anio_min = min(anios_con_incidentes)
+        anio_max = max(max(anios_con_incidentes), anio_actual)
+        anios_disponibles = list(range(anio_min, anio_max + 1))
     else:
         # Si no hay incidentes, mostrar los últimos 3 años y el actual
-        años_disponibles = list(range(año_actual - 2, año_actual + 1))
+        anios_disponibles = list(range(anio_actual - 2, anio_actual + 1))
     
-    años_disponibles.sort(reverse=True)  # Mostrar años más recientes primero
+    anios_disponibles.sort(reverse=True)  # Mostrar años más recientes primero
     
     meses = [
         (1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), (4, 'Abril'),
@@ -183,12 +183,12 @@ def ver_todos_incidentes(request):
         'total_incidentes': incidentes_query.count(),
         'filtros': {
             'mes': mes_filtro,
-            'año': año_filtro,
+            'año': anio_filtro,
             'estado': estado_filtro,
             'gravedad': gravedad_filtro,
         },
         'meses': meses,
-        'años_disponibles': años_disponibles,
+        'años_disponibles': anios_disponibles,
         'estados_choices': estados_choices,
         'gravedad_choices': gravedad_choices,
         'page_title': 'Todos los Incidentes',

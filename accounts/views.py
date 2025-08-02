@@ -68,10 +68,10 @@ def dashboard_jefe(request):
     
     # Incidentes del mes actual
     mes_actual = timezone.now().month
-    año_actual = timezone.now().year
+    anio_actual = timezone.now().year
     incidentes_mes_actual = Incidente.objects.filter(
         fecha_reporte__month=mes_actual,
-        fecha_reporte__year=año_actual
+        fecha_reporte__year=anio_actual
     ).count()
     
     stats = {
