@@ -79,7 +79,6 @@ class Incidente(models.Model):
     )
     notas_internas = models.TextField(
         blank=True,
-        null=True,
         verbose_name='Notas Internas',
         help_text='Notas para uso interno del equipo de seguridad'
     )

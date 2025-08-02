@@ -19,34 +19,42 @@ def forgot_password_rate_limit_view(request):
     """Vista personalizada para mostrar cuando se excede el rate limit de forgot password"""
     return render(request, 'accounts/forgot_password_rate_limit.html')
 
+def _redirect_by_role(user):
+    """Función auxiliar para redireccionar usuarios según su rol"""
+    if user.rol == 'reportante':
+        return redirect('dashboard_reportante')
+    elif user.rol == 'analista':
+        return redirect('dashboard_analista')
+    elif user.rol == 'jefe':
+        return redirect('dashboard_jefe')
+    return redirect('dashboard_reportante')  # fallback por defecto
+
 @ratelimit(key='ip', rate='5/5m', method='POST', block=False)
 @ratelimit(key='user_or_ip', rate='10/h', method='POST', block=False)
 def login_view(request):
     # Verificar si el usuario está siendo rate limited
-    if request.method == 'POST':
-        # Verificar rate limit antes de procesar
-        if getattr(request, 'limited', False):
-            return redirect('rate_limit_exceeded')
-        
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            usuario = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=usuario, password=password)
-            if user is not None:
-                login(request, user)
-                # Redireccionar por rol
-                if user.rol == 'reportante':
-                    return redirect('dashboard_reportante')
-                elif user.rol == 'analista':
-                    return redirect('dashboard_analista')
-                elif user.rol == 'jefe':
-                    return redirect('dashboard_jefe')
-            else:
-                messages.error(request, 'Credenciales incorrectas')
-    else:
+    if request.method != 'POST':
         form = LoginForm()
-    return render(request, 'accounts/login.html', {'form': form})
+        return render(request, 'accounts/login.html', {'form': form})
+    
+    # Verificar rate limit antes de procesar
+    if getattr(request, 'limited', False):
+        return redirect('rate_limit_exceeded')
+    
+    form = LoginForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'accounts/login.html', {'form': form})
+    
+    usuario = form.cleaned_data['username']
+    password = form.cleaned_data['password']
+    user = authenticate(request, username=usuario, password=password)
+    
+    if user is not None:
+        login(request, user)
+        return _redirect_by_role(user)
+    else:
+        messages.error(request, 'Credenciales incorrectas')
+        return render(request, 'accounts/login.html', {'form': form})
 @login_required
 @rol_required('jefe')
 def dashboard_jefe(request):
