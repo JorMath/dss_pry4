@@ -1,5 +1,6 @@
 from django import forms
 from .models import Incidente
+from accounts.models import Usuario
 
 class ReportarIncidenteForm(forms.ModelForm):
     """Formulario para que los usuarios reportantes creen incidentes"""
@@ -51,3 +52,32 @@ class ReportarIncidenteForm(forms.ModelForm):
         if commit:
             incidente.save()
         return incidente
+
+
+class AsignarIncidenteForm(forms.Form):
+    """Formulario para que los jefes asignen incidentes a analistas"""
+    
+    analista = forms.ModelChoiceField(
+        queryset=Usuario.objects.filter(rol='analista').order_by('nombre', 'username'),
+        empty_label="Seleccione un analista",
+        widget=forms.Select(attrs={
+            'class': 'form-input',
+            'required': True
+        }),
+        label='Asignar a Analista'
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Actualizar queryset para asegurar que solo muestre analistas activos
+        self.fields['analista'].queryset = Usuario.objects.filter(
+            rol='analista',
+            is_active=True
+        ).order_by('nombre', 'username')
+        
+    def clean_analista(self):
+        """Validar que el usuario seleccionado sea realmente un analista"""
+        analista = self.cleaned_data.get('analista')
+        if analista and analista.rol != 'analista':
+            raise forms.ValidationError("Solo se pueden asignar incidentes a analistas de seguridad")
+        return analista

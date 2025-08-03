@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from accounts.decorators import rol_required
 from .models import Incidente
-from .forms import ReportarIncidenteForm
+from .forms import ReportarIncidenteForm, AsignarIncidenteForm
 
 @login_required
 @rol_required('reportante')
@@ -191,3 +191,45 @@ def ver_todos_incidentes(request):
         'page_subtitle': 'Gestión completa de incidentes del sistema'
     }
     return render(request, 'incidentes/todos_incidentes.html', context)
+
+
+@login_required
+@rol_required('jefe')
+def asignar_incidente(request, incidente_id):
+    """Vista para asignar un incidente a un analista - HU10"""
+    incidente = get_object_or_404(Incidente, id=incidente_id)
+    
+    if request.method == 'POST':
+        form = AsignarIncidenteForm(request.POST)
+        if form.is_valid():
+            analista_anterior = incidente.asignado_a
+            nuevo_analista = form.cleaned_data['analista']
+            
+            # Actualizar la asignación
+            incidente.asignado_a = nuevo_analista
+            incidente.save()
+            
+            # Mensaje personalizado según si es asignación o reasignación
+            if analista_anterior:
+                messages.success(
+                    request, 
+                    f'Incidente #{incidente.id} reasignado de {analista_anterior.nombre or analista_anterior.username} '
+                    f'a {nuevo_analista.nombre or nuevo_analista.username}'
+                )
+            else:
+                messages.success(
+                    request, 
+                    f'Incidente #{incidente.id} asignado exitosamente a {nuevo_analista.nombre or nuevo_analista.username}'
+                )
+            
+            return redirect('incidentes:ver_todos_incidentes')
+    else:
+        form = AsignarIncidenteForm()
+    
+    context = {
+        'form': form,
+        'incidente': incidente,
+        'page_title': 'Asignar Incidente',
+        'page_subtitle': f'Asignar incidente #{incidente.id} a un analista'
+    }
+    return render(request, 'incidentes/asignar_incidente.html', context)

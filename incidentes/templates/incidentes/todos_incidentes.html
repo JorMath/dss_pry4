@@ -199,8 +199,10 @@
                                         <th>Descripción</th>
                                         <th style="width: 120px;">Estado</th>
                                         <th style="width: 120px;">Gravedad</th>
+                                        <th style="width: 140px;">Asignado a</th>
                                         <th style="width: 140px;">Fecha Reporte</th>
                                         <th style="width: 140px;">Última Actualización</th>
+                                        <th style="width: 100px;">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -236,11 +238,32 @@
                                                 {{ incidente.get_gravedad_display }}
                                             </span>
                                         </td>
+                                        <td>
+                                            {% if incidente.asignado_a %}
+                                                <div class="assigned-info">
+                                                    <i class="fas fa-user-check" style="color: var(--success-color); margin-right: 0.5rem;"></i>
+                                                    {{ incidente.asignado_a.nombre|default:incidente.asignado_a.username }}
+                                                </div>
+                                            {% else %}
+                                                <div class="unassigned-info">
+                                                    <i class="fas fa-user-times" style="color: var(--warning-color); margin-right: 0.5rem;"></i>
+                                                    <span class="text-muted">Sin asignar</span>
+                                                </div>
+                                            {% endif %}
+                                        </td>
                                         <td class="text-muted">
                                             {{ incidente.fecha_reporte|date:"d/m/Y H:i" }}
                                         </td>
                                         <td class="text-muted">
                                             {{ incidente.fecha_actualizacion|date:"d/m/Y H:i" }}
+                                        </td>
+                                        <td class="actions">
+                                            <a href="{% url 'incidentes:asignar_incidente' incidente.id %}" 
+                                               class="btn btn-sm btn-primary" 
+                                               title="Asignar incidente a un analista">
+                                                <i class="fas fa-user-plus"></i>
+                                                Asignar
+                                            </a>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -473,6 +496,58 @@
             margin: 0 1rem;
             font-size: 0.9rem;
             color: var(--text-muted);
+        }
+
+        /* Actions Button Styles */
+        .actions {
+            text-align: center;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-sm i {
+            font-size: 0.75rem;
+        }
+
+        /* Assignment Info Styles */
+        .assigned-info, .unassigned-info {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .assigned-info {
+            color: var(--success-color, #28a745);
+            font-weight: 500;
+        }
+
+        .unassigned-info {
+            color: var(--warning-color, #ffc107);
+        }
+
+        .unassigned-info .text-muted {
+            color: #6c757d !important;
         }
     </style>
 </body>
