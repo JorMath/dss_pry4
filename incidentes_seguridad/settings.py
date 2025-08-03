@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'accounts',
     'administrador',
     'incidentes',
+    'auditlog',
 ]
 AUTH_USER_MODEL = 'accounts.Usuario'
 MIDDLEWARE = [
@@ -110,8 +111,11 @@ WSGI_APPLICATION = 'incidentes_seguridad.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': env.db()
+    'default': env.db('DATABASE_URL'),
+    'logs': env.db('LOGS_DATABASE_URL')
 }
+DATABASE_ROUTERS = ['db_routers.LogsRouter']
+
 
 
 # Password validation
@@ -177,3 +181,7 @@ EMAIL_USE_SSL = env('EMAIL_USE_SSL')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+
+# Proteger los campos sensibles en auditoria 
+AUDITLOG_EXCLUDE_FIELDS = ['password', 'token', 'secret_key']
+FIELD_ENCRYPTION_KEY = env('FIELD_ENCRYPTION_KEY')

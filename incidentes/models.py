@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from encrypted_model_fields.fields import EncryptedTextField
+
 
 User = get_user_model()
 
@@ -30,12 +32,12 @@ class Incidente(models.Model):
         ('critica', 'Crítica'),
     ]
     
-    tipo = models.CharField(
+    tipo = EncryptedTextField(
         max_length=50,
         choices=TIPOS_INCIDENTE,
         verbose_name='Tipo de Incidente'
     )
-    descripcion = models.TextField(
+    descripcion = EncryptedTextField(
         verbose_name='Descripción del Incidente',
         help_text='Describa detalladamente el incidente de seguridad'
     )
@@ -49,7 +51,7 @@ class Incidente(models.Model):
         default='pendiente',
         verbose_name='Estado'
     )
-    gravedad = models.CharField(
+    gravedad = EncryptedTextField(
         max_length=20,
         choices=OPCIONES_GRAVEDAD,
         default='media',
