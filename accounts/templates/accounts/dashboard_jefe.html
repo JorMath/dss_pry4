@@ -70,6 +70,14 @@
                             <p class="action-description">Registrar nuevos miembros del equipo de seguridad con roles específicos</p>
                         </a>
 
+                        <a href="{% url 'administrador:listar_usuarios' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3 class="action-title">Gestionar Usuarios</h3>
+                            <p class="action-description">Ver y administrar todos los usuarios del sistema ordenados por rol</p>
+                        </a>
+
                         <a href="{% url 'incidentes:ver_todos_incidentes' %}" class="action-card">
                             <div class="action-icon">
                                 <i class="fas fa-list-alt"></i>

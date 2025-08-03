@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Usuarios - Sistema de Seguridad</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2030">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="app-title">
+                <i class="fas fa-shield-alt"></i>
+                SISTEMA DE SEGURIDAD
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ user.nombre|first|upper|default:user.username|first|upper }}
+                </div>
+                <div>
+                    <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Jefe de Seguridad</div>
+                </div>
+                <a href="{% url 'dashboard_jefe' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;" title="Dashboard Principal">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="{% url 'logout' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Salir
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding: 1.5rem; background: #ffffff; border: 1px solid var(--gray-200); border-radius: var(--border-radius); box-shadow: var(--card-shadow);">
+                <div>
+                    <h1 class="page-title" style="margin: 0; font-size: 1.5rem;">
+                        <i class="fas fa-users" style="color: var(--accent-orange); margin-right: 0.8rem;"></i>
+                        Gestionar Usuarios del Sistema
+                    </h1>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-muted); font-size: 0.9rem;">Total: {{ usuarios|length }} usuario{{ usuarios|length|pluralize }}</p>
+                </div>
+                <div class="action-buttons">
+                    <a href="{% url 'dashboard_jefe' %}" class="btn btn-outline" style="margin-right: 0.5rem;">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al Dashboard
+                    </a>
+                    <a href="{% url 'administrador:crear_usuario' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Crear Usuario
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div class="stat-card" style="background: white; border: 2px solid #FF6B35; color: #FF6B35;">
+                    <div class="stat-content">
+                        <div class="stat-number" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">{{ estadisticas.jefes }}</div>
+                        <div class="stat-label" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">Jefes</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="background: white; border: 2px solid #4ECDC4; color: #4ECDC4;">
+                    <div class="stat-content">
+                        <div class="stat-number" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">{{ estadisticas.analistas }}</div>
+                        <div class="stat-label" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">Analistas</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="background: white; border: 2px solid #45B7D1; color: #45B7D1;">
+                    <div class="stat-content">
+                        <div class="stat-number" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">{{ estadisticas.reportantes }}</div>
+                        <div class="stat-label" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">Reportantes</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card" style="background: white; border: 2px solid #F093FB; color: #F093FB;">
+                    <div class="stat-content">
+                        <div class="stat-number" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">{{ estadisticas.total }}</div>
+                        <div class="stat-label" style="font-family: 'ndot-47-inspired-by-nothing', 'Inter', sans-serif;">Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Lista de Usuarios</h2>
+                    <p class="card-description">Usuarios ordenados por rol y nombre de usuario</p>
+                </div>
+
+                <div class="card-body">
+                    {% if usuarios %}
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th style="width: 120px;">Rol</th>
+                                        <th style="width: 140px;">Fecha Registro</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for usuario in usuarios %}
+                                    <tr>
+                                        <td>
+                                            <div class="user-info" style="display: flex; align-items: center;">
+                                                <div class="user-avatar" style="width: 32px; height: 32px; background: var(--accent-orange); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 0.75rem; font-size: 0.8rem;">
+                                                    {{ usuario.nombre|first|upper|default:usuario.username|first|upper }}
+                                                </div>
+                                                <span style="font-weight: 600;">{{ usuario.username }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span>{{ usuario.nombre|default:"Sin nombre" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="email-text">{{ usuario.email_plain|default:"Sin email" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="role-badge role-{{ usuario.rol }}">
+                                                {{ usuario.get_rol_display }}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted">
+                                            {{ usuario.date_joined|date:"d/m/Y" }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-state" style="text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
+                            <i class="fas fa-users" style="font-size: 4rem; color: var(--gray-300); margin-bottom: 1.5rem;"></i>
+                            <h3 style="margin-bottom: 1rem; color: var(--secondary-color);">No hay usuarios registrados</h3>
+                            <p style="margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                                Comience creando el primer usuario del sistema.
+                            </p>
+                            <a href="{% url 'administrador:crear_usuario' %}" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i>
+                                Crear Primer Usuario
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .role-badge {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-jefe {
+            background: rgba(255, 107, 53, 0.15);
+            color: #d63031;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .role-analista {
+            background: rgba(78, 205, 196, 0.15);
+            color: #00b894;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .role-reportante {
+            background: rgba(116, 185, 255, 0.15);
+            color: #0984e3;
+            border: 1px solid rgba(116, 185, 255, 0.3);
+        }
+
+        .email-text {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</body>
+</html>
