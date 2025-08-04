@@ -131,3 +131,47 @@ class Incidente(models.Model):
             'cerrado': '#6c757d'
         }
         return colors.get(self.estado, '#6c757d')
+
+
+class HistorialCambioIncidente(models.Model):
+    """Modelo para registrar el historial de cambios de incidentes - HU10"""
+    incidente = models.ForeignKey(
+        Incidente,
+        on_delete=models.CASCADE,
+        related_name='historial_cambios',
+        verbose_name='Incidente'
+    )
+    usuario_modificacion = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Usuario que realizó el cambio'
+    )
+    campo_modificado = models.CharField(
+        max_length=50,
+        verbose_name='Campo modificado'
+    )
+    valor_anterior = models.TextField(
+        blank=True,
+        verbose_name='Valor anterior'
+    )
+    valor_nuevo = models.TextField(
+        blank=True,
+        verbose_name='Valor nuevo'
+    )
+    fecha_cambio = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Fecha del cambio'
+    )
+    descripcion = models.TextField(
+        blank=True,
+        verbose_name='Descripción del cambio'
+    )
+    
+    class Meta:
+        verbose_name = 'Historial de Cambio'
+        verbose_name_plural = 'Historial de Cambios'
+        ordering = ['-fecha_cambio']
+    
+    def __str__(self):
+        return f"Cambio en {self.incidente.id} - {self.campo_modificado} - {self.fecha_cambio.strftime('%d/%m/%Y %H:%M')}"

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Cambios - Incidente #{{ incidente.id }}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2030">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="app-title">
+                <i class="fas fa-shield-alt"></i>
+                SISTEMA DE SEGURIDAD
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ user.nombre|first|upper|default:user.username|first|upper }}
+                </div>
+                <div>
+                    <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Analista de Seguridad</div>
+                </div>
+                <a href="{% url 'logout' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Salir
+                </a>
+            </div>
+        </div>
+
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb-container" style="background: #f8f9fa; padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-200);">
+            <nav class="breadcrumb" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <a href="{% url 'incidentes:dashboard_analista_incidentes' %}" style="color: var(--accent-orange); text-decoration: none; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fas fa-shield-alt"></i>
+                    Dashboard Analista
+                </a>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                <a href="{% url 'incidentes:ver_incidentes_analista' %}" style="color: var(--accent-orange); text-decoration: none; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fas fa-list-alt"></i>
+                    Todos los Incidentes
+                </a>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                <span style="color: var(--secondary-color); font-weight: 500; font-size: 0.9rem;">
+                    <i class="fas fa-history"></i>
+                    Historial #{{ incidente.id }}
+                </span>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-times-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Page Header -->
+            <div class="page-header" style="background: #ffffff; border: 1px solid var(--gray-200); border-radius: var(--border-radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--card-shadow);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 class="page-title" style="margin: 0 0 0.5rem 0;">
+                            <i class="fas fa-history" style="color: var(--accent-orange); margin-right: 0.8rem;"></i>
+                            Historial de Cambios - Incidente #{{ incidente.id }}
+                        </h1>
+                        <p style="margin: 0; color: var(--text-muted);">Seguimiento completo de todas las modificaciones realizadas al incidente</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'incidentes:ver_incidentes_analista' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver a la Lista
+                        </a>
+                        <a href="{% url 'incidentes:actualizar_incidente' incidente.id %}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i>
+                            Actualizar Incidente
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid" style="display: grid; grid-template-columns: 400px 1fr; gap: 2rem;">
+                <!-- Incident Summary Card -->
+                <div class="card" style="height: fit-content;">
+                    <div class="card-header">
+                        <h3 class="card-title">Resumen del Incidente</h3>
+                        <p class="card-description">Información general del incidente</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="incident-summary">
+                            <div class="summary-field">
+                                <label class="summary-label">ID</label>
+                                <div class="summary-value">
+                                    <span class="incident-id">#{{ incidente.id }}</span>
+                                </div>
+                            </div>
+
+                            <div class="summary-field">
+                                <label class="summary-label">Tipo</label>
+                                <div class="summary-value">
+                                    <div class="incident-type">
+                                        <i class="fas {% if 'Bug' in incidente.tipo %}fa-bug{% elif 'Acceso' in incidente.tipo %}fa-user-slash{% elif 'Malware' in incidente.tipo %}fa-virus{% elif 'Phishing' in incidente.tipo %}fa-fish{% elif 'DDoS' in incidente.tipo %}fa-server{% elif 'Fuga' in incidente.tipo %}fa-database{% else %}fa-shield-alt{% endif %}"></i>
+                                        {{ incidente.get_tipo_display }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="summary-field">
+                                <label class="summary-label">Estado Actual</label>
+                                <div class="summary-value">
+                                    <span class="status-badge status-{{ incidente.estado|lower }}">
+                                        {{ incidente.get_estado_display }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="summary-field">
+                                <label class="summary-label">Gravedad Actual</label>
+                                <div class="summary-value">
+                                    <span class="severity-badge severity-{{ incidente.gravedad|lower }}">
+                                        {{ incidente.get_gravedad_display }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="summary-field">
+                                <label class="summary-label">Reportado por</label>
+                                <div class="summary-value">
+                                    <i class="fas fa-user" style="margin-right: 0.5rem; color: var(--accent-orange);"></i>
+                                    {{ incidente.reportado_por.nombre|default:incidente.reportado_por.username }}
+                                </div>
+                            </div>
+
+                            {% if incidente.asignado_a %}
+                            <div class="summary-field">
+                                <label class="summary-label">Asignado a</label>
+                                <div class="summary-value">
+                                    <i class="fas fa-user-tie" style="margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                    {{ incidente.asignado_a.nombre|default:incidente.asignado_a.username }}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="summary-field">
+                                <label class="summary-label">Fecha de Reporte</label>
+                                <div class="summary-value">
+                                    <i class="fas fa-calendar-alt" style="margin-right: 0.5rem; color: var(--accent-orange);"></i>
+                                    {{ incidente.fecha_reporte|date:"d/m/Y H:i" }}
+                                </div>
+                            </div>
+
+                            <div class="summary-field">
+                                <label class="summary-label">Última Actualización</label>
+                                <div class="summary-value">
+                                    <i class="fas fa-clock" style="margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                    {{ incidente.fecha_actualizacion|date:"d/m/Y H:i" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="history-stats" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-200);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--secondary-color); font-size: 1rem;">Estadísticas de Cambios</h4>
+                            <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="stat-item">
+                                    <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">{{ historial.count }}</div>
+                                    <div class="stat-label" style="font-size: 0.8rem; color: var(--text-muted);">Total Cambios</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: var(--accent-orange);">{{ unique_users }}</div>
+                                    <div class="stat-label" style="font-size: 0.8rem; color: var(--text-muted);">Usuarios</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Timeline -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 class="card-title">Cronología de Cambios</h3>
+                                <p class="card-description">Registro completo de todas las modificaciones realizadas ({{ historial.count }} cambios)</p>
+                            </div>
+                            {% if historial %}
+                            <div class="timeline-controls">
+                                <button onclick="toggleTimelineView()" class="btn btn-sm btn-secondary" id="viewToggle">
+                                    <i class="fas fa-expand-alt"></i>
+                                    Vista Compacta
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        {% if historial %}
+                            <div class="timeline-container" id="timelineContainer">
+                                {% for cambio in historial %}
+                                <div class="timeline-item" data-date="{{ cambio.fecha_cambio|date:'Y-m-d' }}">
+                                    <div class="timeline-marker">
+                                        <i class="fas {% if cambio.campo_modificado == 'Estado' %}fa-tasks{% elif cambio.campo_modificado == 'Gravedad' %}fa-exclamation-triangle{% elif cambio.campo_modificado == 'Notas Internas' %}fa-sticky-note{% else %}fa-edit{% endif %}"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-header">
+                                            <div class="change-field">
+                                                <i class="fas fa-tag" style="margin-right: 0.5rem; color: var(--accent-orange);"></i>
+                                                <strong>{{ cambio.campo_modificado }}</strong>
+                                            </div>
+                                            <div class="change-date">
+                                                <i class="fas fa-clock" style="margin-right: 0.5rem;"></i>
+                                                {{ cambio.fecha_cambio|date:"d/m/Y H:i:s" }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline-body">
+                                            <div class="change-details">
+                                                <div class="change-row">
+                                                    <span class="change-label">Valor anterior:</span>
+                                                    <span class="change-from">{{ cambio.valor_anterior|default:"Sin valor previo" }}</span>
+                                                </div>
+                                                <div class="change-arrow">
+                                                    <i class="fas fa-arrow-down" style="color: var(--accent-orange);"></i>
+                                                </div>
+                                                <div class="change-row">
+                                                    <span class="change-label">Nuevo valor:</span>
+                                                    <span class="change-to">{{ cambio.valor_nuevo }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="change-user">
+                                                <i class="fas fa-user" style="margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                                <strong>Modificado por:</strong> {{ cambio.usuario_modificacion.nombre|default:cambio.usuario_modificacion.username }}
+                                                <span class="user-role" style="margin-left: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                                                    ({{ cambio.usuario_modificacion.rol|default:"Usuario" }})
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Timeline Navigation -->
+                            {% if historial.count > 10 %}
+                            <div class="timeline-navigation" style="margin-top: 2rem; text-align: center; padding-top: 1.5rem; border-top: 1px solid var(--gray-200);">
+                                <button onclick="showMoreHistory()" class="btn btn-secondary" id="showMoreBtn">
+                                    <i class="fas fa-chevron-down"></i>
+                                    Mostrar Más Cambios ({{ historial.count|add:"-10" }} restantes)
+                                </button>
+                            </div>
+                            {% endif %}
+
+                        {% else %}
+                            <!-- Empty State -->
+                            <div class="empty-state" style="text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
+                                <i class="fas fa-history" style="font-size: 4rem; color: var(--gray-300); margin-bottom: 1.5rem;"></i>
+                                <h3 style="margin-bottom: 1rem; color: var(--secondary-color);">No hay cambios registrados</h3>
+                                <p style="margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                                    Este incidente aún no ha sido modificado. Los cambios de estado, gravedad y notas internas aparecerán aquí.
+                                </p>
+                                <a href="{% url 'incidentes:actualizar_incidente' incidente.id %}" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i>
+                                    Realizar Primera Actualización
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Summary card styles */
+        .incident-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .summary-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.4rem;
+        }
+
+        .summary-value {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .incident-id {
+            font-weight: 600;
+            color: var(--accent-orange);
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        .incident-type {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .incident-type i {
+            color: var(--accent-orange);
+            width: 16px;
+        }
+
+        /* Status and severity badges */
+        .status-badge, .severity-badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pendiente {
+            background: rgba(255, 107, 53, 0.15);
+            color: #d63031;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .status-en_proceso {
+            background: rgba(255, 193, 7, 0.15);
+            color: #e17055;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-cerrado {
+            background: rgba(116, 185, 255, 0.15);
+            color: #0984e3;
+            border: 1px solid rgba(116, 185, 255, 0.3);
+        }
+
+        .severity-baja {
+            background: rgba(0, 184, 148, 0.15);
+            color: #00b894;
+            border: 1px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .severity-media {
+            background: rgba(255, 193, 7, 0.15);
+            color: #fdcb6e;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .severity-alta {
+            background: rgba(255, 107, 53, 0.15);
+            color: #e17055;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        /* Timeline styles */
+        .timeline-container {
+            position: relative;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 40px;
+            width: 2px;
+            height: calc(100% + 1rem);
+            background: linear-gradient(to bottom, var(--primary-color), var(--gray-200));
+        }
+
+        .timeline-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            margin-right: 1.5rem;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-content {
+            flex: 1;
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-orange);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .change-field {
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            color: var(--secondary-color);
+        }
+
+        .change-date {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .timeline-body {
+            font-size: 0.9rem;
+        }
+
+        .change-details {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .change-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .change-label {
+            font-weight: 600;
+            color: var(--secondary-color);
+            min-width: 120px;
+        }
+
+        .change-from {
+            color: #dc3545;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .change-to {
+            color: #28a745;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            background: rgba(40, 167, 69, 0.1);
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .change-arrow {
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+
+        .change-user {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            background: #e3f2fd;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #bbdefb;
+        }
+
+        .user-role {
+            font-style: italic;
+        }
+
+        /* Compact view styles */
+        .timeline-container.compact .timeline-item {
+            margin-bottom: 1rem;
+        }
+
+        .timeline-container.compact .timeline-content {
+            padding: 1rem;
+        }
+
+        .timeline-container.compact .change-details {
+            padding: 0.75rem;
+        }
+
+        /* Button styles */
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        /* Responsive design */
+        @media (max-width: 968px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .timeline-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .change-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .change-label {
+                min-width: auto;
+            }
+        }
+    </style>
+
+    <script>
+        let isCompactView = false;
+
+        function toggleTimelineView() {
+            const container = document.getElementById('timelineContainer');
+            const button = document.getElementById('viewToggle');
+            
+            isCompactView = !isCompactView;
+            
+            if (isCompactView) {
+                container.classList.add('compact');
+                button.innerHTML = '<i class="fas fa-compress-alt"></i> Vista Expandida';
+            } else {
+                container.classList.remove('compact');
+                button.innerHTML = '<i class="fas fa-expand-alt"></i> Vista Compacta';
+            }
+        }
+
+        function showMoreHistory() {
+            // This would typically load more history items via AJAX
+            // For now, just hide the button
+            document.getElementById('showMoreBtn').style.display = 'none';
+        }
+
+        // Initialize timeline animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            
+            timelineItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(-20px)';
+                    item.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateX(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

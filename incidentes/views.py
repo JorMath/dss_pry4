@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from accounts.decorators import rol_required
-from .models import Incidente
-from .forms import ReportarIncidenteForm, AsignarIncidenteForm
+from .models import Incidente, HistorialCambioIncidente
+from .forms import ReportarIncidenteForm, AsignarIncidenteForm, ActualizarIncidenteForm
 
 @login_required
 @rol_required('reportante')
@@ -259,3 +259,242 @@ def asignar_incidente(request, incidente_id):
         'page_subtitle': f'Asignar incidente #{incidente.id} a un analista'
     }
     return render(request, 'incidentes/asignar_incidente.html', context)
+
+
+# ====== VISTAS PARA ANALISTAS DE SEGURIDAD ======
+
+@login_required
+@rol_required('analista')
+def dashboard_analista_incidentes(request):
+    """Dashboard específico para analistas con estadísticas de incidentes"""
+    # Estadísticas de incidentes asignados al analista
+    mis_asignados = Incidente.objects.filter(asignado_a=request.user)
+    
+    stats = {
+        'total': mis_asignados.count(),
+        'pendientes': mis_asignados.filter(estado='pendiente').count(),
+        'en_proceso': mis_asignados.filter(estado='en_proceso').count(),
+        'cerrados': mis_asignados.filter(estado='cerrado').count(),
+        'criticos': mis_asignados.filter(gravedad='alta').count(),  # HU09 solo permite baja, media, alta
+    }
+    
+    # Últimos 5 incidentes asignados
+    incidentes_recientes = mis_asignados.order_by('-fecha_actualizacion')[:5]
+    
+    context = {
+        'stats': stats,
+        'incidentes_recientes': incidentes_recientes,
+        'page_title': 'Dashboard Analista',
+        'page_subtitle': 'Gestión de incidentes asignados'
+    }
+    return render(request, 'incidentes/dashboard_analista_incidentes.html', context)
+
+
+@login_required
+@rol_required('analista')
+def ver_incidentes_analista(request):
+    """Vista para que el analista vea todos los incidentes registrados - HU08"""
+    from django.utils import timezone
+    
+    # Obtener parámetros de filtro
+    mes_filtro = request.GET.get('mes')
+    anio_filtro = request.GET.get('año')
+    estado_filtro = request.GET.get('estado')
+    gravedad_filtro = request.GET.get('gravedad')
+    
+    # Empezar con todos los incidentes
+    incidentes_query = Incidente.objects.all()
+    
+    # Aplicar filtros de fecha
+    if mes_filtro and anio_filtro:
+        try:
+            mes = int(mes_filtro)
+            anio = int(anio_filtro)
+            incidentes_query = incidentes_query.filter(
+                fecha_reporte__month=mes,
+                fecha_reporte__year=anio
+            )
+        except (ValueError, TypeError):
+            pass
+    elif anio_filtro:
+        try:
+            anio = int(anio_filtro)
+            incidentes_query = incidentes_query.filter(fecha_reporte__year=anio)
+        except (ValueError, TypeError):
+            pass
+    elif mes_filtro:
+        try:
+            mes = int(mes_filtro)
+            incidentes_query = incidentes_query.filter(fecha_reporte__month=mes)
+        except (ValueError, TypeError):
+            pass
+    
+    # Aplicar filtro de estado
+    if estado_filtro:
+        incidentes_query = incidentes_query.filter(estado=estado_filtro)
+    
+    # Ordenar por fecha más reciente
+    incidentes_query = incidentes_query.order_by('-fecha_reporte')
+    
+    # Para campos encriptados como gravedad, filtrar manualmente
+    if gravedad_filtro:
+        todos_incidentes = list(incidentes_query)
+        incidentes_filtrados = [inc for inc in todos_incidentes if inc.gravedad == gravedad_filtro]
+        incidentes_query = incidentes_filtrados
+    
+    # Paginación
+    if gravedad_filtro:
+        paginator = Paginator(incidentes_query, 15)
+        page_number = request.GET.get('page')
+        incidentes = paginator.get_page(page_number)
+        
+        # Estadísticas para datos filtrados manualmente
+        total_filtrados = len(incidentes_query)
+        stats = {
+            'total': total_filtrados,
+            'pendientes': len([i for i in incidentes_query if i.estado == 'pendiente']),
+            'en_proceso': len([i for i in incidentes_query if i.estado == 'en_proceso']),
+            'cerrados': len([i for i in incidentes_query if i.estado == 'cerrado']),
+            'altas': len([i for i in incidentes_query if i.gravedad == 'alta']),
+        }
+    else:
+        paginator = Paginator(incidentes_query, 15)
+        page_number = request.GET.get('page')
+        incidentes = paginator.get_page(page_number)
+        
+        # Estadísticas normales
+        stats = {
+            'total': incidentes_query.count(),
+            'pendientes': incidentes_query.filter(estado='pendiente').count(),
+            'en_proceso': incidentes_query.filter(estado='en_proceso').count(),
+            'cerrados': incidentes_query.filter(estado='cerrado').count(),
+            'altas': len([i for i in list(incidentes_query) if i.gravedad == 'alta']),
+        }
+    
+    # Generar opciones para filtros
+    anio_actual = timezone.now().year
+    anios_con_incidentes = Incidente.objects.dates('fecha_reporte', 'year').values_list('fecha_reporte__year', flat=True)
+    if anios_con_incidentes:
+        anio_min = min(anios_con_incidentes)
+        anio_max = max(max(anios_con_incidentes), anio_actual)
+        anios_disponibles = list(range(anio_min, anio_max + 1))
+    else:
+        anios_disponibles = list(range(anio_actual - 2, anio_actual + 1))
+    
+    anios_disponibles.sort(reverse=True)
+    
+    meses = [
+        (1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), (4, 'Abril'),
+        (5, 'Mayo'), (6, 'Junio'), (7, 'Julio'), (8, 'Agosto'),
+        (9, 'Septiembre'), (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre')
+    ]
+    
+    # Opciones para filtros según HU09
+    estados_choices = [
+        ('pendiente', 'Pendiente'),
+        ('en_proceso', 'En Proceso'),
+        ('cerrado', 'Cerrado'),
+    ]
+    
+    gravedad_choices = [
+        ('baja', 'Baja'),
+        ('media', 'Media'),
+        ('alta', 'Alta'),
+    ]
+    
+    context = {
+        'incidentes': incidentes,
+        'stats': stats,
+        'total_incidentes': stats['total'] if gravedad_filtro else incidentes_query.count(),
+        'filtros': {
+            'mes': mes_filtro,
+            'año': anio_filtro,
+            'estado': estado_filtro,
+            'gravedad': gravedad_filtro,
+        },
+        'meses': meses,
+        'años_disponibles': anios_disponibles,
+        'estados_choices': estados_choices,
+        'gravedad_choices': gravedad_choices,
+        'page_title': 'Todos los Incidentes',
+        'page_subtitle': 'Gestión de incidentes del sistema'
+    }
+    return render(request, 'incidentes/ver_incidentes_analista.html', context)
+
+
+@login_required
+@rol_required('analista')
+def actualizar_incidente(request, incidente_id):
+    """Vista para que los analistas actualicen incidentes - HU09"""
+    incidente = get_object_or_404(Incidente, id=incidente_id)
+    
+    if request.method == 'POST':
+        form = ActualizarIncidenteForm(request.POST, instance=incidente)
+        if form.is_valid():
+            # Guardar valores anteriores para el historial
+            valores_anteriores = {
+                'gravedad': incidente.gravedad,
+                'estado': incidente.estado,
+                'notas_internas': incidente.notas_internas or ''
+            }
+            
+            # Actualizar el incidente
+            incidente_actualizado = form.save()
+            
+            # Registrar cambios en el historial - HU10
+            for campo in ['gravedad', 'estado', 'notas_internas']:
+                valor_anterior = valores_anteriores[campo]
+                valor_nuevo = getattr(incidente_actualizado, campo) or ''
+                
+                if valor_anterior != valor_nuevo:
+                    HistorialCambioIncidente.objects.create(
+                        incidente=incidente_actualizado,
+                        usuario_modificacion=request.user,
+                        campo_modificado=campo,
+                        valor_anterior=valor_anterior,
+                        valor_nuevo=valor_nuevo,
+                        descripcion=f"Cambió {campo} de '{valor_anterior}' a '{valor_nuevo}'"
+                    )
+            
+            messages.success(
+                request,
+                f'Incidente #{incidente.id} actualizado exitosamente. '
+                f'Gravedad: {incidente_actualizado.get_gravedad_display()}, '
+                f'Estado: {incidente_actualizado.get_estado_display()}'
+            )
+            
+            return redirect('incidentes:ver_incidentes_analista')
+    else:
+        form = ActualizarIncidenteForm(instance=incidente)
+    
+    context = {
+        'form': form,
+        'incidente': incidente,
+        'page_title': 'Actualizar Incidente',
+        'page_subtitle': f'Clasificar y actualizar incidente #{incidente.id}'
+    }
+    return render(request, 'incidentes/actualizar_incidente.html', context)
+
+
+@login_required
+@rol_required('analista')
+def historial_incidente(request, incidente_id):
+    """Vista para ver el historial de cambios de un incidente - HU10"""
+    incidente = get_object_or_404(Incidente, id=incidente_id)
+    
+    # Obtener historial de cambios ordenado por fecha más reciente
+    historial = HistorialCambioIncidente.objects.filter(incidente=incidente).order_by('-fecha_cambio')
+    
+    # Paginación del historial
+    paginator = Paginator(historial, 10)  # 10 cambios por página
+    page_number = request.GET.get('page')
+    historial_paginado = paginator.get_page(page_number)
+    
+    context = {
+        'incidente': incidente,
+        'historial': historial_paginado,
+        'total_cambios': historial.count(),
+        'page_title': 'Historial de Incidente',
+        'page_subtitle': f'Historial de cambios del incidente #{incidente.id}'
+    }
+    return render(request, 'incidentes/historial_incidente.html', context)

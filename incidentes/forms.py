@@ -81,3 +81,52 @@ class AsignarIncidenteForm(forms.Form):
         if analista and analista.rol != 'analista':
             raise forms.ValidationError("Solo se pueden asignar incidentes a analistas de seguridad")
         return analista
+
+
+class ActualizarIncidenteForm(forms.ModelForm):
+    """Formulario para que los analistas actualicen incidentes - HU09"""
+    
+    class Meta:
+        model = Incidente
+        fields = ['gravedad', 'estado', 'notas_internas']
+        widgets = {
+            'gravedad': forms.Select(attrs={
+                'class': 'form-input',
+                'required': True
+            }),
+            'estado': forms.Select(attrs={
+                'class': 'form-input',
+                'required': True
+            }),
+            'notas_internas': forms.Textarea(attrs={
+                'class': 'form-input',
+                'rows': 4,
+                'placeholder': 'Notas internas para el equipo de seguridad...'
+            }),
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Configurar labels personalizados
+        self.fields['gravedad'].label = 'Gravedad del Incidente'
+        self.fields['estado'].label = 'Estado del Incidente'
+        self.fields['notas_internas'].label = 'Notas Internas'
+        
+        # Solo gravedad y estado son obligatorios
+        self.fields['gravedad'].required = True
+        self.fields['estado'].required = True
+        self.fields['notas_internas'].required = False
+        
+        # Limitar opciones de estado según criterios de aceptación HU09
+        self.fields['estado'].choices = [
+            ('pendiente', 'Pendiente'),
+            ('en_proceso', 'En Proceso'),
+            ('cerrado', 'Cerrado'),
+        ]
+        
+        # Limitar opciones de gravedad según criterios HU09
+        self.fields['gravedad'].choices = [
+            ('baja', 'Baja'),
+            ('media', 'Media'),
+            ('alta', 'Alta'),
+        ]

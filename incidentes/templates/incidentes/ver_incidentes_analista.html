@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos los Incidentes - Analista de Seguridad</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2030">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="app-title">
+                <i class="fas fa-shield-alt"></i>
+                SISTEMA DE SEGURIDAD
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ user.nombre|first|upper|default:user.username|first|upper }}
+                </div>
+                <div>
+                    <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Analista de Seguridad</div>
+                </div>
+                <a href="{% url 'logout' %}" style="margin-left: 1rem; color: var(--accent-orange); text-decoration: none; font-size: 0.9rem;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Salir
+                </a>
+            </div>
+        </div>
+
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb-container" style="background: #f8f9fa; padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-200);">
+            <nav class="breadcrumb" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <a href="{% url 'incidentes:dashboard_analista_incidentes' %}" style="color: var(--accent-orange); text-decoration: none; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fas fa-shield-alt"></i>
+                    Dashboard Analista
+                </a>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                <span style="color: var(--secondary-color); font-weight: 500; font-size: 0.9rem;">
+                    <i class="fas fa-list-alt"></i>
+                    Todos los Incidentes
+                </span>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-times-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Page Header -->
+            <div class="page-header" style="background: #ffffff; border: 1px solid var(--gray-200); border-radius: var(--border-radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--card-shadow);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 class="page-title" style="margin: 0 0 0.5rem 0;">
+                            <i class="fas fa-list-alt" style="color: var(--accent-orange); margin-right: 0.8rem;"></i>
+                            Todos los Incidentes de Seguridad
+                        </h1>
+                        <p style="margin: 0; color: var(--text-muted);">Visualiza y gestiona todos los incidentes reportados en el sistema</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'incidentes:dashboard_analista_incidentes' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Filtros de Búsqueda</h3>
+                    <p class="card-description">Filtra los incidentes para encontrar información específica</p>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="filter-form">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="id_tipo">Tipo de Incidente</label>
+                                <select name="tipo" id="id_tipo" class="form-control">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="Bug" {% if request.GET.tipo == 'Bug' %}selected{% endif %}>Bug de Seguridad</option>
+                                    <option value="Acceso no autorizado" {% if request.GET.tipo == 'Acceso no autorizado' %}selected{% endif %}>Acceso no autorizado</option>
+                                    <option value="Malware" {% if request.GET.tipo == 'Malware' %}selected{% endif %}>Malware</option>
+                                    <option value="Phishing" {% if request.GET.tipo == 'Phishing' %}selected{% endif %}>Phishing</option>
+                                    <option value="DDoS" {% if request.GET.tipo == 'DDoS' %}selected{% endif %}>Ataque DDoS</option>
+                                    <option value="Fuga de datos" {% if request.GET.tipo == 'Fuga de datos' %}selected{% endif %}>Fuga de datos</option>
+                                    <option value="Otro" {% if request.GET.tipo == 'Otro' %}selected{% endif %}>Otro</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="id_estado">Estado</label>
+                                <select name="estado" id="id_estado" class="form-control">
+                                    <option value="">Todos los estados</option>
+                                    <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                    <option value="en_proceso" {% if request.GET.estado == 'en_proceso' %}selected{% endif %}>En Proceso</option>
+                                    <option value="cerrado" {% if request.GET.estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="id_gravedad">Gravedad</label>
+                                <select name="gravedad" id="id_gravedad" class="form-control">
+                                    <option value="">Todas las gravedades</option>
+                                    <option value="baja" {% if request.GET.gravedad == 'baja' %}selected{% endif %}>Baja</option>
+                                    <option value="media" {% if request.GET.gravedad == 'media' %}selected{% endif %}>Media</option>
+                                    <option value="alta" {% if request.GET.gravedad == 'alta' %}selected{% endif %}>Alta</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="id_asignado_a">Asignado a</label>
+                                <select name="asignado_a" id="id_asignado_a" class="form-control">
+                                    <option value="">Todos los asignados</option>
+                                    {% for analista in analistas %}
+                                        <option value="{{ analista.id }}" {% if request.GET.asignado_a == analista.id|stringformat:'s' %}selected{% endif %}>
+                                            {{ analista.nombre|default:analista.username }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                                Filtrar
+                            </button>
+                            <a href="{% url 'incidentes:ver_incidentes_analista' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                                Limpiar Filtros
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Incidents Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 class="card-title">Lista de Incidentes</h3>
+                            <p class="card-description">
+                                Se encontraron {{ paginated_incidentes.paginator.count }} incidentes en total
+                                {% if request.GET.tipo or request.GET.estado or request.GET.gravedad or request.GET.asignado_a %}
+                                    (filtrados)
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="table-controls">
+                            <span class="results-count">
+                                Mostrando {{ paginated_incidentes.start_index }}-{{ paginated_incidentes.end_index }} de {{ paginated_incidentes.paginator.count }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    {% if paginated_incidentes %}
+                        <div class="table-container" style="width: 100%;">
+                            <table class="data-table" style="width: 100%; table-layout: fixed;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">ID</th>
+                                        <th style="width: 160px;">Tipo</th>
+                                        <th style="width: 150px;">Reportado por</th>
+                                        <th style="width: 150px;">Asignado a</th>
+                                        <th style="width: 110px;">Estado</th>
+                                        <th style="width: 110px;">Gravedad</th>
+                                        <th style="width: 120px;">Fecha Reporte</th>
+                                        <th style="width: 140px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for incidente in paginated_incidentes %}
+                                    <tr>
+                                        <td>
+                                            <span class="incident-id">#{{ incidente.id }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="incident-type">
+                                                <i class="fas {% if 'Bug' in incidente.tipo %}fa-bug{% elif 'Acceso' in incidente.tipo %}fa-user-slash{% elif 'Malware' in incidente.tipo %}fa-virus{% elif 'Phishing' in incidente.tipo %}fa-fish{% elif 'DDoS' in incidente.tipo %}fa-server{% elif 'Fuga' in incidente.tipo %}fa-database{% else %}fa-shield-alt{% endif %}"></i>
+                                                <span style="word-break: break-word;">{{ incidente.get_tipo_display }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="reporter-info">
+                                                <i class="fas fa-user" style="color: var(--accent-orange); margin-right: 0.5rem;"></i>
+                                                <span style="word-break: break-word;">{{ incidente.reportado_por.nombre|default:incidente.reportado_por.username }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="assigned-info">
+                                                {% if incidente.asignado_a %}
+                                                    <i class="fas fa-user-tie" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                                                    <span style="word-break: break-word;">{{ incidente.asignado_a.nombre|default:incidente.asignado_a.username }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">
+                                                        <i class="fas fa-user-slash"></i>
+                                                        Sin asignar
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-{{ incidente.estado|lower }}">
+                                                {{ incidente.get_estado_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="severity-badge severity-{{ incidente.gravedad|lower }}">
+                                                {{ incidente.get_gravedad_display }}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted" style="font-size: 0.85rem;">
+                                            {{ incidente.fecha_reporte|date:"d/m/Y" }}<br>
+                                            <small>{{ incidente.fecha_reporte|date:"H:i" }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                                <a href="{% url 'incidentes:actualizar_incidente' incidente.id %}" class="btn btn-sm btn-primary" title="Actualizar incidente">
+                                                    <i class="fas fa-edit"></i>
+                                                    Actualizar
+                                                </a>
+                                                <a href="{% url 'incidentes:historial_incidente' incidente.id %}" class="btn btn-sm btn-info" title="Ver historial de cambios">
+                                                    <i class="fas fa-history"></i>
+                                                    Historial
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if paginated_incidentes.has_other_pages %}
+                        <div class="pagination-container">
+                            <nav class="pagination">
+                                {% if paginated_incidentes.has_previous %}
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" class="pagination-link">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ paginated_incidentes.previous_page_number }}" class="pagination-link">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                {% endif %}
+
+                                {% for num in paginated_incidentes.paginator.page_range %}
+                                    {% if paginated_incidentes.number == num %}
+                                        <span class="pagination-link active">{{ num }}</span>
+                                    {% elif num > paginated_incidentes.number|add:'-3' and num < paginated_incidentes.number|add:'3' %}
+                                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}" class="pagination-link">{{ num }}</a>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if paginated_incidentes.has_next %}
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ paginated_incidentes.next_page_number }}" class="pagination-link">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ paginated_incidentes.paginator.num_pages }}" class="pagination-link">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                {% endif %}
+                            </nav>
+                        </div>
+                        {% endif %}
+
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="empty-state" style="text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
+                            <i class="fas fa-search" style="font-size: 4rem; color: var(--gray-300); margin-bottom: 1.5rem;"></i>
+                            <h3 style="margin-bottom: 1rem; color: var(--secondary-color);">No se encontraron incidentes</h3>
+                            <p style="margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                                {% if request.GET.tipo or request.GET.estado or request.GET.gravedad or request.GET.asignado_a %}
+                                    No hay incidentes que coincidan con los filtros seleccionados. Intenta ajustar los criterios de búsqueda.
+                                {% else %}
+                                    No hay incidentes registrados en el sistema aún.
+                                {% endif %}
+                            </p>
+                            {% if request.GET.tipo or request.GET.estado or request.GET.gravedad or request.GET.asignado_a %}
+                                <a href="{% url 'incidentes:ver_incidentes_analista' %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i>
+                                    Limpiar Filtros
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Filter form styles */
+        .filter-form {
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        /* Table styles */
+        .incident-id {
+            font-weight: 600;
+            color: var(--accent-orange);
+            font-family: 'Courier New', monospace;
+        }
+
+        .incident-type {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .incident-type i {
+            color: var(--accent-orange);
+            width: 16px;
+            flex-shrink: 0;
+        }
+
+        .reporter-info, .assigned-info {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pendiente {
+            background: rgba(255, 107, 53, 0.15);
+            color: #d63031;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .status-en_proceso {
+            background: rgba(255, 193, 7, 0.15);
+            color: #e17055;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-cerrado {
+            background: rgba(116, 185, 255, 0.15);
+            color: #0984e3;
+            border: 1px solid rgba(116, 185, 255, 0.3);
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .severity-baja {
+            background: rgba(0, 184, 148, 0.15);
+            color: #00b894;
+            border: 1px solid rgba(0, 184, 148, 0.3);
+        }
+
+        .severity-media {
+            background: rgba(255, 193, 7, 0.15);
+            color: #fdcb6e;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .severity-alta {
+            background: rgba(255, 107, 53, 0.15);
+            color: #e17055;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+            transform: translateY(-1px);
+        }
+
+        .btn-sm i {
+            font-size: 0.75rem;
+        }
+
+        .results-count {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Pagination styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .pagination-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .pagination-link:hover {
+            background-color: var(--accent-orange);
+            color: white;
+            border-color: var(--accent-orange);
+        }
+
+        .pagination-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+    </style>
+</body>
+</html>

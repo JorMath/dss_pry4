@@ -106,7 +106,8 @@ def dashboard_jefe(request):
 @login_required
 @rol_required('analista')
 def dashboard_analista(request):
-    return render(request, 'accounts/dashboard_analista.html', {'usuario': request.user})
+    # Redirigir al dashboard específico de incidentes
+    return redirect('incidentes:dashboard_analista_incidentes')
 
 @login_required
 @rol_required('reportante')

@@ -18,27 +18,49 @@ def after_all(context):
 
 def before_scenario(context, scenario):
     """Configuración antes de cada escenario"""
-    pass
-
-def after_scenario(context, _):
-    """Limpieza después de cada escenario"""
-    # Limpiar datos de prueba con compatibilidad para campos cifrados
+    # Limpiar datos de prueba antes de cada escenario
     try:
         from accounts.models import Usuario
-        from incidentes.models import Incidente
+        from incidentes.models import Incidente, HistorialCambioIncidente
         
-        # Limpiar usuarios de prueba (usar métodos que funcionen con cifrado)
-        usuarios_test = Usuario.objects.filter(username__contains='test')
-        for usuario in usuarios_test:
-            if usuario.email_plain and '@test.com' in usuario.email_plain:
-                usuario.delete()
-        
-        # También limpiar por username de prueba
-        Usuario.objects.filter(username__in=['jorman_test', 'reportante_test', 'analista_test']).delete()
+        # Limpiar usuarios de prueba específicos
+        Usuario.objects.filter(username__in=[
+            'analista_test', 'reportante_test', 'juan',
+            'analista1_test', 'analista2_test', 'test_reportante'
+        ]).delete()
         
         # Limpiar incidentes de prueba
         Incidente.objects.filter(descripcion__icontains='test').delete()
-        Incidente.objects.filter(descripcion__icontains='bug permite escribir').delete()
+        Incidente.objects.filter(descripcion__icontains='prueba').delete()
+        Incidente.objects.filter(descripcion__icontains='incidente de seguridad número').delete()
+        
+        # Limpiar historial
+        HistorialCambioIncidente.objects.all().delete()
+        
+    except Exception:
+        # No fallar si hay problemas con la limpieza
+        pass
+
+def after_scenario(context, _):
+    """Limpieza después de cada escenario"""
+    # Limpiar datos de prueba después de cada escenario
+    try:
+        from accounts.models import Usuario
+        from incidentes.models import Incidente, HistorialCambioIncidente
+        
+        # Limpiar usuarios de prueba específicos
+        Usuario.objects.filter(username__in=[
+            'analista_test', 'reportante_test', 'juan',
+            'analista1_test', 'analista2_test', 'test_reportante'
+        ]).delete()
+        
+        # Limpiar incidentes de prueba
+        Incidente.objects.filter(descripcion__icontains='test').delete()
+        Incidente.objects.filter(descripcion__icontains='prueba').delete()
+        Incidente.objects.filter(descripcion__icontains='incidente de seguridad número').delete()
+        
+        # Limpiar historial
+        HistorialCambioIncidente.objects.all().delete()
         
     except Exception:
         # No fallar si hay problemas con la limpieza
