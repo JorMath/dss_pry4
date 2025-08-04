@@ -24,3 +24,17 @@ Thumbs.db
 # Testing
 .coverage
 htmlcov/
+
+# Certificados y archivos de seguridad
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+certificates/
+certs/
+ssl/
+keys/
