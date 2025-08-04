@@ -177,12 +177,12 @@
                             <h4 style="margin: 0 0 1rem 0; color: var(--secondary-color); font-size: 1rem;">Estadísticas de Cambios</h4>
                             <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div class="stat-item">
-                                    <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">{{ historial.count }}</div>
-                                    <div class="stat-label" style="font-size: 0.8rem; color: var(--text-muted);">Total Cambios</div>
+                                    <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">{{ total_cambios }}</div>
+                                    <div class="stat-label" style="font-size: 0.8rem; color: #6c757d;">TOTAL CAMBIOS</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: var(--accent-orange);">{{ unique_users }}</div>
-                                    <div class="stat-label" style="font-size: 0.8rem; color: var(--text-muted);">Usuarios</div>
+                                    <div class="stat-number" style="font-size: 1.5rem; font-weight: 700; color: #e67e22;">{{ unique_users }}</div>
+                                    <div class="stat-label" style="font-size: 0.8rem; color: #6c757d;">USUARIOS</div>
                                 </div>
                             </div>
                         </div>
@@ -195,7 +195,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <h3 class="card-title">Cronología de Cambios</h3>
-                                <p class="card-description">Registro completo de todas las modificaciones realizadas ({{ historial.count }} cambios)</p>
+                                <p class="card-description">Registro completo de todas las modificaciones realizadas ({{ total_cambios }} cambios)</p>
                             </div>
                             {% if historial %}
                             <div class="timeline-controls">

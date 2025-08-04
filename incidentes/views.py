@@ -474,11 +474,15 @@ def historial_incidente(request, incidente_id):
     # Obtener historial de cambios ordenado por fecha más reciente
     historial = HistorialCambioIncidente.objects.filter(incidente=incidente).order_by('-fecha_cambio')
     
-    # Debug: verificar que se obtienen registros
-    total_registros = historial.count()
-    print(f"Historial para incidente #{incidente_id}: {total_registros} registros encontrados")
+    # Calcular estadísticas
+    total_cambios = historial.count()
+    unique_users = historial.values('usuario_modificacion').distinct().count()
     
-    if total_registros > 0:
+    # Debug: verificar que se obtienen registros
+    print(f"Historial para incidente #{incidente_id}: {total_cambios} registros encontrados")
+    print(f"Usuarios únicos que han modificado: {unique_users}")
+    
+    if total_cambios > 0:
         print("Primeros 3 registros:")
         for i, cambio in enumerate(historial[:3]):
             print(f"  {i+1}. Campo: {cambio.campo_modificado}, Usuario: {cambio.usuario_modificacion.username}, Fecha: {cambio.fecha_cambio}")
@@ -494,7 +498,8 @@ def historial_incidente(request, incidente_id):
     context = {
         'incidente': incidente,
         'historial': historial_paginado,
-        'total_cambios': historial.count(),
+        'total_cambios': total_cambios,
+        'unique_users': unique_users,
         'page_title': 'Historial de Incidente',
         'page_subtitle': f'Historial de cambios del incidente #{incidente.id}'
     }
