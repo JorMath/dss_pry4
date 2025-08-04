@@ -7,6 +7,134 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'accounts/css/nothing-style.css' %}?v=2030">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .filter-form {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-group label i {
+            color: #fd5722;
+            font-size: 0.9rem;
+        }
+        
+        .filter-group select {
+            padding: 0.875rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background-color: #ffffff;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        .filter-group select:focus {
+            border-color: #fd5722;
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(253, 87, 34, 0.1);
+            background-color: #fefefe;
+        }
+        
+        .filter-group select:hover {
+            border-color: #fd5722;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            padding-top: 1.5rem;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #fd5722 0%, #e64a19 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #e64a19 0%, #d84315 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(253, 87, 34, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .filter-form {
+                padding: 1.5rem;
+            }
+            
+            .filter-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -18,7 +146,11 @@
             </div>
             <div class="user-info">
                 <div class="user-avatar">
-                    {{ user.nombre|first|upper|default:user.username|first|upper }}
+                    {% if user.nombre %}
+                        {{ user.nombre|first|upper }}
+                    {% else %}
+                        {{ user.username|first|upper }}
+                    {% endif %}
                 </div>
                 <div>
                     <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
@@ -81,52 +213,64 @@
             <!-- Filters Section -->
             <div class="card" style="margin-bottom: 2rem;">
                 <div class="card-header">
-                    <h3 class="card-title">Filtros de Búsqueda</h3>
+                    <h3 class="card-title">
+                        <i class="fas fa-filter" style="color: var(--accent-orange); margin-right: 0.5rem;"></i>
+                        Filtros de Búsqueda
+                    </h3>
                     <p class="card-description">Filtra los incidentes para encontrar información específica</p>
                 </div>
                 <div class="card-body">
                     <form method="get" class="filter-form">
                         <div class="filter-row">
                             <div class="filter-group">
-                                <label for="id_tipo">Tipo de Incidente</label>
+                                <label for="id_tipo">
+                                    <i class="fas fa-tag"></i>
+                                    Tipo de Incidente
+                                </label>
                                 <select name="tipo" id="id_tipo" class="form-control">
                                     <option value="">Todos los tipos</option>
-                                    <option value="Bug" {% if request.GET.tipo == 'Bug' %}selected{% endif %}>Bug de Seguridad</option>
-                                    <option value="Acceso no autorizado" {% if request.GET.tipo == 'Acceso no autorizado' %}selected{% endif %}>Acceso no autorizado</option>
-                                    <option value="Malware" {% if request.GET.tipo == 'Malware' %}selected{% endif %}>Malware</option>
-                                    <option value="Phishing" {% if request.GET.tipo == 'Phishing' %}selected{% endif %}>Phishing</option>
-                                    <option value="DDoS" {% if request.GET.tipo == 'DDoS' %}selected{% endif %}>Ataque DDoS</option>
-                                    <option value="Fuga de datos" {% if request.GET.tipo == 'Fuga de datos' %}selected{% endif %}>Fuga de datos</option>
-                                    <option value="Otro" {% if request.GET.tipo == 'Otro' %}selected{% endif %}>Otro</option>
+                                    {% for value, label in tipos_choices %}
+                                        <option value="{{ value }}" {% if filtros.tipo == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             
                             <div class="filter-group">
-                                <label for="id_estado">Estado</label>
+                                <label for="id_estado">
+                                    <i class="fas fa-tasks"></i>
+                                    Estado
+                                </label>
                                 <select name="estado" id="id_estado" class="form-control">
                                     <option value="">Todos los estados</option>
-                                    <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                                    <option value="en_proceso" {% if request.GET.estado == 'en_proceso' %}selected{% endif %}>En Proceso</option>
-                                    <option value="cerrado" {% if request.GET.estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
+                                    {% for value, label in estados_choices %}
+                                        <option value="{{ value }}" {% if filtros.estado == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             
                             <div class="filter-group">
-                                <label for="id_gravedad">Gravedad</label>
+                                <label for="id_gravedad">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Gravedad
+                                </label>
                                 <select name="gravedad" id="id_gravedad" class="form-control">
                                     <option value="">Todas las gravedades</option>
-                                    <option value="baja" {% if request.GET.gravedad == 'baja' %}selected{% endif %}>Baja</option>
-                                    <option value="media" {% if request.GET.gravedad == 'media' %}selected{% endif %}>Media</option>
-                                    <option value="alta" {% if request.GET.gravedad == 'alta' %}selected{% endif %}>Alta</option>
+                                    {% for value, label in gravedad_choices %}
+                                        <option value="{{ value }}" {% if filtros.gravedad == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             
                             <div class="filter-group">
-                                <label for="id_asignado_a">Asignado a</label>
+                                <label for="id_asignado_a">
+                                    <i class="fas fa-user"></i>
+                                    Asignado a
+                                </label>
                                 <select name="asignado_a" id="id_asignado_a" class="form-control">
                                     <option value="">Todos los asignados</option>
+                                    <option value="sin_asignar" {% if filtros.asignado_a == 'sin_asignar' %}selected{% endif %}>Sin asignar</option>
                                     {% for analista in analistas %}
-                                        <option value="{{ analista.id }}" {% if request.GET.asignado_a == analista.id|stringformat:'s' %}selected{% endif %}>
+                                        <option value="{{ analista.id }}" {% if filtros.asignado_a == analista.id|stringformat:'s' %}selected{% endif %}>
                                             {{ analista.nombre|default:analista.username }}
                                         </option>
                                     {% endfor %}
@@ -137,7 +281,7 @@
                         <div class="filter-actions">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-search"></i>
-                                Filtrar
+                                Aplicar Filtros
                             </button>
                             <a href="{% url 'incidentes:ver_incidentes_analista' %}" class="btn btn-secondary">
                                 <i class="fas fa-times"></i>
@@ -155,7 +299,7 @@
                         <div>
                             <h3 class="card-title">Lista de Incidentes</h3>
                             <p class="card-description">
-                                Se encontraron {{ paginated_incidentes.paginator.count }} incidentes en total
+                                Se encontraron {{ incidentes.paginator.count }} incidentes en total
                                 {% if request.GET.tipo or request.GET.estado or request.GET.gravedad or request.GET.asignado_a %}
                                     (filtrados)
                                 {% endif %}
@@ -163,14 +307,14 @@
                         </div>
                         <div class="table-controls">
                             <span class="results-count">
-                                Mostrando {{ paginated_incidentes.start_index }}-{{ paginated_incidentes.end_index }} de {{ paginated_incidentes.paginator.count }}
+                                Mostrando {{ incidentes.start_index }}-{{ incidentes.end_index }} de {{ incidentes.paginator.count }}
                             </span>
                         </div>
                     </div>
                 </div>
 
                 <div class="card-body">
-                    {% if paginated_incidentes %}
+                    {% if incidentes %}
                         <div class="table-container" style="width: 100%;">
                             <table class="data-table" style="width: 100%; table-layout: fixed;">
                                 <thead>
@@ -186,7 +330,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for incidente in paginated_incidentes %}
+                                    {% for incidente in incidentes %}
                                     <tr>
                                         <td>
                                             <span class="incident-id">#{{ incidente.id }}</span>
@@ -249,31 +393,31 @@
                         </div>
 
                         <!-- Pagination -->
-                        {% if paginated_incidentes.has_other_pages %}
+                        {% if incidentes.has_other_pages %}
                         <div class="pagination-container">
                             <nav class="pagination">
-                                {% if paginated_incidentes.has_previous %}
+                                {% if incidentes.has_previous %}
                                     <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" class="pagination-link">
                                         <i class="fas fa-angle-double-left"></i>
                                     </a>
-                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ paginated_incidentes.previous_page_number }}" class="pagination-link">
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ incidentes.previous_page_number }}" class="pagination-link">
                                         <i class="fas fa-angle-left"></i>
                                     </a>
                                 {% endif %}
 
-                                {% for num in paginated_incidentes.paginator.page_range %}
-                                    {% if paginated_incidentes.number == num %}
+                                {% for num in incidentes.paginator.page_range %}
+                                    {% if incidentes.number == num %}
                                         <span class="pagination-link active">{{ num }}</span>
-                                    {% elif num > paginated_incidentes.number|add:'-3' and num < paginated_incidentes.number|add:'3' %}
+                                    {% elif num > incidentes.number|add:'-3' and num < incidentes.number|add:'3' %}
                                         <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}" class="pagination-link">{{ num }}</a>
                                     {% endif %}
                                 {% endfor %}
 
-                                {% if paginated_incidentes.has_next %}
-                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ paginated_incidentes.next_page_number }}" class="pagination-link">
+                                {% if incidentes.has_next %}
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ incidentes.next_page_number }}" class="pagination-link">
                                         <i class="fas fa-angle-right"></i>
                                     </a>
-                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ paginated_incidentes.paginator.num_pages }}" class="pagination-link">
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ incidentes.paginator.num_pages }}" class="pagination-link">
                                         <i class="fas fa-angle-double-right"></i>
                                     </a>
                                 {% endif %}

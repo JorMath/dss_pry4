@@ -18,7 +18,11 @@
             </div>
             <div class="user-info">
                 <div class="user-avatar">
-                    {{ user.nombre|first|upper|default:user.username|first|upper }}
+                    {% if user.nombre %}
+                        {{ user.nombre|first|upper }}
+                    {% else %}
+                        {{ user.username|first|upper }}
+                    {% endif %}
                 </div>
                 <div>
                     <div style="font-weight: 500;">{{ user.nombre|default:user.username }}</div>
