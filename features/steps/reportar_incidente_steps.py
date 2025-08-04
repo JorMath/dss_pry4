@@ -89,7 +89,6 @@ def step_entonces_notificacion_reporte(context):
     try:
         incidente_recargado = Incidente.objects.get(id=context.incidente_creado.id)
         assert incidente_recargado is not None, "No se pudo recargar el incidente desde la BD"
-        print(f"✓ Incidente {incidente_recargado.id} confirmado en BD")
     except Incidente.DoesNotExist:
         assert False, "El incidente no se guardó en la base de datos"
     

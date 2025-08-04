@@ -62,8 +62,4 @@ def step_impl(context):
     # Validar que están ordenados por fecha (más recientes primero)
     fechas = [inc.fecha_reporte for inc in context.incidentes_visibles]
     assert fechas == sorted(fechas, reverse=True), "Los incidentes deben estar ordenados por fecha descendente"
-    
-    print(f"✓ Se pueden visualizar {len(context.incidentes_visibles)} incidentes correctamente")
-    print(f"✓ Todos los incidentes tienen los campos requeridos: fecha, tipo, descripción, gravedad, reportante")
-    print(f"✓ Los incidentes están ordenados por fecha de reporte")
         # pero al menos parte del contenido debería estar visible

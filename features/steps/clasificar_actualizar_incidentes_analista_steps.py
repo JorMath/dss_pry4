@@ -92,7 +92,3 @@ def step_impl(context, gravedad_esperada, nombre_analista):
     assert historial is not None, "Se debe crear un registro en el historial de cambios"
     assert historial.valor_anterior == context.gravedad_inicial, f"El valor anterior debe ser '{context.gravedad_inicial}'"
     assert historial.valor_nuevo == gravedad_esperada.lower(), f"El valor nuevo debe ser '{gravedad_esperada.lower()}'"
-    
-    print(f"✓ La gravedad del incidente cambió correctamente de '{context.gravedad_inicial}' a '{gravedad_esperada.lower()}'")
-    print(f"✓ Se actualizó la fecha de modificación del incidente")
-    print(f"✓ Se creó el registro en el historial de cambios por el analista '{nombre_analista}'")

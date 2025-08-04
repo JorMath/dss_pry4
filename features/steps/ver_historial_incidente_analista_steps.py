@@ -103,9 +103,3 @@ def step_impl(context):
     campos_modificados = set(cambio.campo_modificado for cambio in context.historial_consulta)
     campos_esperados = {'estado', 'gravedad', 'asignado_a'}
     assert campos_esperados.issubset(campos_modificados), f"El historial debe incluir cambios en campos: {campos_esperados}"
-    
-    print(f"✓ Se consultó el historial completo con {len(context.historial_consulta)} cambios")
-    print(f"✓ Todos los cambios incluyen: usuario, fecha, campo modificado, valores anterior y nuevo")
-    print(f"✓ Los cambios están ordenados cronológicamente")
-    print(f"✓ El historial incluye cambios de {len(usuarios_modificadores)} analistas diferentes")
-    print(f"✓ Se registraron cambios en los campos: {', '.join(campos_modificados)}")

@@ -414,17 +414,11 @@ def actualizar_incidente(request, incidente_id):
             # Actualizar el incidente
             incidente_actualizado = form.save()
             
-            # Debug: imprimir los valores para verificar
-            print(f"Valores anteriores: {valores_anteriores}")
-            print(f"Valores nuevos: gravedad={incidente_actualizado.gravedad}, estado={incidente_actualizado.estado}, notas={incidente_actualizado.notas_internas}")
-            
             # Registrar cambios en el historial - HU10
             cambios_registrados = 0
             for campo in ['gravedad', 'estado', 'notas_internas']:
                 valor_anterior = str(valores_anteriores[campo]) if valores_anteriores[campo] else ''
                 valor_nuevo = str(getattr(incidente_actualizado, campo)) if getattr(incidente_actualizado, campo) else ''
-                
-                print(f"Comparando {campo}: '{valor_anterior}' vs '{valor_nuevo}'")
                 
                 if valor_anterior != valor_nuevo:
                     historial_creado = HistorialCambioIncidente.objects.create(
@@ -436,13 +430,9 @@ def actualizar_incidente(request, incidente_id):
                         descripcion=f"Cambió {campo} de '{valor_anterior}' a '{valor_nuevo}'"
                     )
                     cambios_registrados += 1
-                    print(f"Creado historial #{historial_creado.id} para campo {campo}")
-            
-            print(f"Total cambios registrados en historial: {cambios_registrados}")
             
             # Verificar que se creó el historial
             total_historial = HistorialCambioIncidente.objects.filter(incidente=incidente_actualizado).count()
-            print(f"Total registros en historial para este incidente: {total_historial}")
             
             messages.success(
                 request,
@@ -478,22 +468,10 @@ def historial_incidente(request, incidente_id):
     total_cambios = historial.count()
     unique_users = historial.values('usuario_modificacion').distinct().count()
     
-    # Debug: verificar que se obtienen registros
-    print(f"Historial para incidente #{incidente_id}: {total_cambios} registros encontrados")
-    print(f"Usuarios únicos que han modificado: {unique_users}")
-    
-    if total_cambios > 0:
-        print("Primeros 3 registros:")
-        for i, cambio in enumerate(historial[:3]):
-            print(f"  {i+1}. Campo: {cambio.campo_modificado}, Usuario: {cambio.usuario_modificacion.username}, Fecha: {cambio.fecha_cambio}")
-    
     # Paginación del historial
     paginator = Paginator(historial, 10)  # 10 cambios por página
     page_number = request.GET.get('page')
     historial_paginado = paginator.get_page(page_number)
-    
-    print(f"Página actual: {historial_paginado.number}, Total páginas: {paginator.num_pages}")
-    print(f"Registros en página actual: {len(historial_paginado.object_list)}")
     
     context = {
         'incidente': incidente,
