@@ -119,25 +119,51 @@ def ver_todos_incidentes(request):
     if estado_filtro:
         incidentes_query = incidentes_query.filter(estado=estado_filtro)
     
-    if gravedad_filtro:
-        incidentes_query = incidentes_query.filter(gravedad=gravedad_filtro)
-    
     # Ordenar por fecha más reciente
     incidentes_query = incidentes_query.order_by('-fecha_reporte')
     
-    # Paginación
-    paginator = Paginator(incidentes_query, 15)  # 15 incidentes por página
-    page_number = request.GET.get('page')
-    incidentes = paginator.get_page(page_number)
+    # Para campos encriptados como gravedad, tenemos que filtrar después de obtener los datos
+    if gravedad_filtro:
+        # Obtener todos los incidentes que cumplan los otros filtros
+        todos_incidentes = list(incidentes_query)
+        # Filtrar por gravedad en Python
+        incidentes_filtrados = [inc for inc in todos_incidentes if inc.gravedad == gravedad_filtro]
+        # Convertir de vuelta a una lista para la paginación
+        incidentes_query = incidentes_filtrados
+    else:
+        # Convertir a lista solo si no hay filtro de gravedad
+        pass
     
-    # Estadísticas generales
-    stats = {
-        'total': incidentes_query.count(),
-        'pendientes': incidentes_query.filter(estado='pendiente').count(),
-        'en_proceso': incidentes_query.filter(estado__in=['en_revision', 'en_proceso']).count(),
-        'resueltos': incidentes_query.filter(estado='resuelto').count(),
-        'criticos': incidentes_query.filter(gravedad='critica').count(),
-    }
+    # Paginación
+    if gravedad_filtro:
+        # Para listas filtradas manualmente, usamos una paginación diferente
+        paginator = Paginator(incidentes_query, 15)  # incidentes_query es una lista
+        page_number = request.GET.get('page')
+        incidentes = paginator.get_page(page_number)
+        
+        # Estadísticas para datos filtrados manualmente
+        total_filtrados = len(incidentes_query)
+        stats = {
+            'total': total_filtrados,
+            'pendientes': len([i for i in incidentes_query if i.estado == 'pendiente']),
+            'en_proceso': len([i for i in incidentes_query if i.estado in ['en_revision', 'en_proceso']]),
+            'resueltos': len([i for i in incidentes_query if i.estado == 'resuelto']),
+            'criticos': len([i for i in incidentes_query if i.gravedad == 'critica']),
+        }
+    else:
+        # Paginación normal para QuerySets
+        paginator = Paginator(incidentes_query, 15)  # 15 incidentes por página
+        page_number = request.GET.get('page')
+        incidentes = paginator.get_page(page_number)
+        
+        # Estadísticas normales
+        stats = {
+            'total': incidentes_query.count(),
+            'pendientes': incidentes_query.filter(estado='pendiente').count(),
+            'en_proceso': incidentes_query.filter(estado__in=['en_revision', 'en_proceso']).count(),
+            'resueltos': incidentes_query.filter(estado='resuelto').count(),
+            'criticos': incidentes_query.filter(gravedad='critica').count(),
+        }
     
     # Generar opciones para el filtro de meses y años
     anio_actual = timezone.now().year
@@ -176,7 +202,7 @@ def ver_todos_incidentes(request):
     context = {
         'incidentes': incidentes,
         'stats': stats,
-        'total_incidentes': incidentes_query.count(),
+        'total_incidentes': stats['total'] if gravedad_filtro else incidentes_query.count(),
         'filtros': {
             'mes': mes_filtro,
             'año': anio_filtro,
