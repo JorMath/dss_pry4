@@ -7,7 +7,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'incidentes_seguridad.settings')
 django.setup()
 
 from behave import given, when, then
-from django.test import Client
 from accounts.models import Usuario
 from incidentes.models import Incidente
 
@@ -43,14 +42,13 @@ def step_dado_usuario_con_incidente_data(context, tipo, descripcion, fecha):
     context.tipo_incidente = tipo_mapping.get(tipo, 'otro')
     context.descripcion_incidente = descripcion
     context.fecha_incidente = fecha
-    context.client = Client()
-    context.client.force_login(context.usuario_reportante)
 
 
 @when('reporte el incidente')
 def step_cuando_reportar_incidente(context):
+    """Reportar incidente - Solo lógica de negocio"""
     try:
-        # Crear el incidente directamente usando el modelo
+        # Lógica de negocio: crear el incidente directamente usando el modelo
         context.incidente_creado = Incidente.objects.create(
             tipo=context.tipo_incidente,
             descripcion=context.descripcion_incidente,
@@ -65,25 +63,35 @@ def step_cuando_reportar_incidente(context):
 
 @then('el incidente se registra con el estado "{estado_esperado}" y gravedad "{gravedad_esperada}"')
 def step_entonces_incidente_registrado(context, estado_esperado, gravedad_esperada):
+    """Verificar registro del incidente - Solo lógica de negocio"""
     assert context.reporte_exitoso, f"El reporte del incidente falló: {getattr(context, 'error_reporte', 'Error desconocido')}"
     
     assert context.incidente_creado is not None, "El incidente no fue creado"
     assert context.incidente_creado.estado == estado_esperado, f"Estado esperado: {estado_esperado}, obtenido: {context.incidente_creado.estado}"
     assert context.incidente_creado.gravedad == gravedad_esperada, f"Gravedad esperada: {gravedad_esperada}, obtenida: {context.incidente_creado.gravedad}"
+    
+    # Verificar que fue asignado al usuario correcto
+    assert context.incidente_creado.reportado_por == context.usuario_reportante, "El incidente no fue asignado al usuario reportante correcto"
 
 
 @then('se notifica al Usuario reportante que se ha realizado el reporte correctamente')
 def step_entonces_notificacion_reporte(context):
+    """Verificar notificación de reporte - Solo lógica de negocio"""
     # Verificar que el incidente fue creado exitosamente
     assert context.reporte_exitoso, "El reporte no fue exitoso"
+    assert context.incidente_creado is not None, "El incidente no fue creado"
     
-    # Verificar que el incidente existe en la base de datos
-    incidente_db = Incidente.objects.filter(
-        reportado_por=context.usuario_reportante,
-        descripcion=context.descripcion_incidente
-    ).first()
+    # Para la lógica de negocio, verificamos que el objeto tiene las propiedades correctas
+    assert context.incidente_creado.tipo == context.tipo_incidente, f"Tipo esperado: {context.tipo_incidente}, obtenido: {context.incidente_creado.tipo}"
+    assert context.incidente_creado.reportado_por == context.usuario_reportante, "El usuario reportante no coincide"
     
-    assert incidente_db is not None, "El incidente no se guardó en la base de datos"
+    # Verificar que se puede recargar desde la BD (esto confirma que se guardó)
+    try:
+        incidente_recargado = Incidente.objects.get(id=context.incidente_creado.id)
+        assert incidente_recargado is not None, "No se pudo recargar el incidente desde la BD"
+        print(f"✓ Incidente {incidente_recargado.id} confirmado en BD")
+    except Incidente.DoesNotExist:
+        assert False, "El incidente no se guardó en la base de datos"
     
     # En un escenario real, aquí verificaríamos que se muestra el mensaje en la UI
     # Para propósitos de esta prueba de negocio, consideramos que si el incidente 

@@ -7,6 +7,10 @@ def before_all(context):
     if not hasattr(django.conf.settings, 'configured') or not django.conf.settings.configured:
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'incidentes_seguridad.settings')
         django.setup()
+    
+    # Configurar las bases de datos para los tests de Behave
+    from behave_django.testcase import BehaviorDrivenTestCase
+    BehaviorDrivenTestCase.databases = ['default', 'logs']
 
 def after_all(context):
     """Limpieza después de todas las pruebas"""
